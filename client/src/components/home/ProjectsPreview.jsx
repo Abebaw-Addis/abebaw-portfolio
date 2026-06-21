@@ -23,27 +23,19 @@ const projects = [
 
 const ProjectsPreview = () => {
   return (
-    <section className="py-20 bg-gray-900">
-      <h2 className="text-center text-3xl font-bold mb-10">
-        Featured Projects
-      </h2>
+    <section id="projects" className="bg-gray-900 py-20">
+      <h2 className="mb-10 text-center text-3xl font-bold">Featured Projects</h2>
 
-      <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-6 px-6">
-
+      <div className="mx-auto grid max-w-6xl gap-6 px-6 md:grid-cols-3">
         {projects.map((p, i) => (
           <div
             key={i}
-            className="bg-gray-800 p-6 rounded-xl hover:scale-105 transition"
+            className="rounded-xl bg-gray-800 p-6 transition hover:scale-105"
           >
-            <h3 className="text-xl font-semibold text-blue-400">
-              {p.title}
-            </h3>
-            <p className="text-gray-400 mt-2">
-              {p.desc}
-            </p>
+            <h3 className="text-xl font-semibold text-blue-400">{p.title}</h3>
+            <p className="mt-2 text-gray-400">{p.desc}</p>
           </div>
         ))}
-
       </div>
     </section>
   );

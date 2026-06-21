@@ -1,10 +1,10 @@
-const User = require("./auth.model");
+const User = require("./auth-model");
 
 const {
   hashPassword,
   comparePassword,
   generateToken
-} = require("./auth.service");
+} = require("./auth-service");
 
 exports.register = async (req, res) => {
   try {

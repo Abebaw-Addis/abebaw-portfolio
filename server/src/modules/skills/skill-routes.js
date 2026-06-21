@@ -5,9 +5,9 @@ const {
   getSkills,
   updateSkill,
   deleteSkill
-} = require("./skill.controller");
+} = require("./skill-controller");
 
-const auth = require("../../middleware/auth.middleware");
+const auth = require("../../middleware/auth-middleware");
 
 // Public route (frontend portfolio)
 router.get("/", getSkills);

@@ -7,21 +7,17 @@ const stats = [
 
 const Stats = () => {
   return (
-    <section className="py-20 bg-gray-900">
-      <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 px-6">
-
+    <section id="about" className="bg-gray-900 py-20">
+      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-6 md:grid-cols-4">
         {stats.map((s, i) => (
           <div
             key={i}
-            className="bg-gray-800 p-6 rounded-xl text-center hover:scale-105 transition"
+            className="rounded-xl bg-gray-800 p-6 text-center transition hover:scale-105"
           >
-            <h2 className="text-3xl font-bold text-blue-500">
-              {s.value}
-            </h2>
-            <p className="text-gray-400 mt-2">{s.label}</p>
+            <h2 className="text-3xl font-bold text-blue-500">{s.value}</h2>
+            <p className="mt-2 text-gray-400">{s.label}</p>
           </div>
         ))}
-
       </div>
     </section>
   );

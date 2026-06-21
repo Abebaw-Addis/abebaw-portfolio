@@ -1,17 +1,17 @@
 const CTA = () => {
   return (
-    <section className="py-24 text-center">
-      <h2 className="text-4xl font-bold">
-        Let's Work Together
-      </h2>
-
-      <p className="text-gray-400 mt-4">
-        Open for internships and collaborations
+    <section id="contact" className="py-24 text-center">
+      <h2 className="text-4xl font-bold">Let&apos;s Work Together</h2>
+      <p className="mt-4 text-gray-400">
+        Open for internships, freelance projects, and collaborations.
       </p>
 
-      <button className="mt-8 bg-blue-600 px-8 py-3 rounded-lg">
+      <a
+        href="mailto:abadis1221@gmail.com"
+        className="mt-8 inline-block rounded-lg bg-blue-600 px-8 py-3 transition hover:bg-blue-700"
+      >
         Contact Me
-      </button>
+      </a>
     </section>
   );
 };

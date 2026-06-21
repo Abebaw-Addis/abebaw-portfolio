@@ -1,48 +1,39 @@
-import userImage from '../../assets/user.png';
+import userImage from "../../assets/user.png";
+import { profileData } from "../../data/homeData";
 
 const Hero = () => {
   return (
-    <section className="min-h-screen flex items-center pt-20">
-      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 px-6">
-
-        {/* Left */}
+    <section id="home" className="flex min-h-screen items-center pt-24">
+      <div className="mx-auto grid max-w-6xl gap-10 px-6 md:grid-cols-2">
         <div>
-          <h2 className="text-blue-500 font-semibold">
-            Hello, I'm
-          </h2>
+          <h2 className="font-semibold text-blue-500">Hello, I&apos;m</h2>
+          <h1 className="mt-2 text-5xl font-bold">{profileData.fullName}</h1>
+          <p className="mt-4 text-lg text-gray-400">{profileData.title}</p>
+          <p className="mt-6 text-gray-500">{profileData.bio}</p>
 
-          <h1 className="text-5xl font-bold mt-2">
-            Abebaw
-          </h1>
-
-          <p className="text-gray-400 mt-4 text-lg">
-            Software Engineer | Web Developer | AI & Cybersecurity Enthusiast
-          </p>
-
-          <p className="text-gray-500 mt-6">
-            I build scalable full-stack applications, AI-based systems,
-            and secure web platforms.
-          </p>
-
-          <div className="flex gap-4 mt-8">
-            <button className="bg-blue-600 px-6 py-3 rounded-lg hover:bg-blue-700">
+          <div className="mt-8 flex flex-wrap gap-4">
+            <a
+              href="#projects"
+              className="rounded-lg bg-blue-600 px-6 py-3 transition hover:bg-blue-700"
+            >
               View Projects
-            </button>
-
-            <button className="border border-blue-600 px-6 py-3 rounded-lg hover:bg-blue-600/20">
-              Download CV
-            </button>
+            </a>
+            <a
+              href="mailto:abadis1221@gmail.com"
+              className="rounded-lg border border-blue-600 px-6 py-3 transition hover:bg-blue-600/20"
+            >
+              Contact Me
+            </a>
           </div>
         </div>
 
-        {/* Right */}
         <div className="flex justify-center">
           <img
             src={userImage}
-            className="w-80 h-80 rounded-full object-cover border-4 border-blue-600"
+            alt={profileData.fullName}
+            className="h-80 w-80 rounded-full border-4 border-blue-600 object-cover shadow-2xl shadow-blue-900/30"
           />
         </div>
-
       </div>
     </section>
   );

@@ -1,4 +1,4 @@
-const skillService = require("./skill.service");
+const skillService = require("./skill-service");
 
 exports.createSkill = async (req, res) => {
   try {

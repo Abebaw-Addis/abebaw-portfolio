@@ -1,4 +1,4 @@
-const Profile = require("./profile.model");
+const Profile = require("./profile-model");
 
 exports.getProfile = async (req, res) => {
   try {

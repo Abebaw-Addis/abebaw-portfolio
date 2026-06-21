@@ -1,4 +1,4 @@
-const Skill = require("./skill.model");
+const Skill = require("./skill-model");
 
 exports.createSkill = async (data) => {
   return await Skill.create(data);
