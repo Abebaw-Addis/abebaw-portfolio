@@ -1,0 +1,98 @@
+export const skillsData = [
+    {
+        name: "React",
+        category: "Frontend",
+        level: 90,
+        icon: "",
+    },
+    {
+        name: "Node.js",
+        category: "Backend",
+        level: 85,
+        icon: "",
+    },
+    {
+        name: "MongoDB",
+        category: "Database",
+        level: 80,
+        icon: "",
+    },
+    {
+        name: "TensorFlow",
+        category: "AI/ML",
+        level: 75,
+        icon: "",
+    },
+    {
+        name: "Sckit-learn",
+        category: "AI/ML",
+        level: 70,
+        icon: "",
+    },
+    {
+        name: "Cybersecurity",
+        category: "Cybersecurity",
+        level: 70,
+        icon: "",
+    },
+    {
+        name: "Python",
+        category: "Programming Language",
+        level: 65,
+        icon: "",
+    },
+    {
+        name: "CSS",
+        category: "Frontend",
+        level: 80,
+        icon: "",
+    },
+    {
+        name: "JavaScript",
+        category: "Programming Language",
+        level: 85,
+        icon: "",
+    },
+    {
+        name: "Java",
+        category: "Programming Language",
+        level: 50,
+        icon: "",
+    },
+    {
+        name: "PHP",
+        category: "Backend",
+        level: 60,
+        icon: "",
+    },
+    {
+        name: "HTML",
+        category: "Frontend",
+        level: 90,
+        icon: "",
+    },
+    {
+        name: "Express.js",
+        category: "Backend",
+        level: 80,
+        icon: "",
+    },
+    {
+        name: "MySQL",
+        category: "Database",
+        level: 75,
+        icon: "",
+    },
+    {
+        name: "Git",
+        category: "DevOps",
+        level: 85,
+        icon: "",
+    },
+    {
+        name: "Tailwind CSS",
+        category: "Frontend",
+        level: 80,
+        icon: "",
+    },
+];

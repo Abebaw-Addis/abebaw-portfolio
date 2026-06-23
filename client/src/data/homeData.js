@@ -8,73 +8,26 @@ export const profileData = {
   linkedin: "",
   image: "",
   resume: "",
+  intro: "Hello, I'm",
+  highlights: [
+    "Build responsive, production-ready web apps.",
+    "Deliver secure solutions with AI and cybersecurity best practices.",
+    "Create polished user interfaces with modern UX design.",
+  ],
+  cta: [
+    { label: "View Projects", href: "#projects", variant: "primary" },
+    { label: "Contact Me", href: "#contact", variant: "secondary" },
+  ],
+  contactTitle: "Let\'s Work Together",
+  contactSubtitle: "Open for internships, freelance projects, and collaborations.",
+  contactSubmitLabel: "Send Message",
+  contactEmail: "abadis1221@gmail.com",
+  featureList: [
+    "I build scalable full-stack apps with modern architecture.",
+    "I make UI/UX responsive, clean, and accessible.",
+    "I combine AI, cybersecurity, and web development expertise.",
+  ],
 };
-
-export const skillsData = [
-  {
-    name: "React",
-    category: "Frontend",
-    level: 90,
-    icon: "",
-  },
-  {
-    name: "Node.js",
-    category: "Backend",
-    level: 85,
-    icon: "",
-  },
-  {
-    name: "MongoDB",
-    category: "Database",
-    level: 80,
-    icon: "",
-  },
-  {
-    name: "TensorFlow",
-    category: "AI/ML",
-    level: 75,
-    icon: "",
-  },
-  {
-    name: "Cybersecurity",
-    category: "Cybersecurity",
-    level: 70,
-    icon: "",
-  },
-];
-
-export const projectsData = [
-  {
-    title: "AI-Based IDS",
-    description:
-      "Machine learning intrusion detection system for zero-day attacks",
-    technologies: ["Python", "TensorFlow", "Scapy"],
-    github: "",
-    live: "",
-    image: "",
-    featured: true,
-  },
-  {
-    title: "School Management System",
-    description:
-      "Face recognition authentication + student management system",
-    technologies: ["React", "Node", "MySQL"],
-    github: "",
-    live: "",
-    image: "",
-    featured: true,
-  },
-  {
-    title: "Portfolio CMS",
-    description:
-      "Dynamic portfolio with admin dashboard",
-    technologies: ["MERN Stack"],
-    github: "",
-    live: "",
-    image: "",
-    featured: true,
-  },
-];
 
 export const statsData = {
   projects: 15,
