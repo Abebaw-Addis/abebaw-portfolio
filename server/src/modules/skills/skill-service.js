@@ -1,23 +1,24 @@
-const Skill = require("./skill-model");
+import Skill from "./skill-model.js";
 
-exports.createSkill = async (data) => {
+export const createSkill = async (data) => {
+  console.log(data);
   return await Skill.create(data);
 };
 
-exports.getSkills = async () => {
+export const getSkills = async () => {
   return await Skill.find().sort({ level: -1 });
 };
 
-exports.getSkillsByCategory = async (category) => {
+export const getSkillsByCategory = async (category) => {
   return await Skill.find({ category }).sort({ level: -1 });
 };
 
-exports.updateSkill = async (id, data) => {
+export const updateSkill = async (id, data) => {
   return await Skill.findByIdAndUpdate(id, data, {
     new: true
   });
 };
 
-exports.deleteSkill = async (id) => {
+export const deleteSkill = async (id) => {
   return await Skill.findByIdAndDelete(id);
 };

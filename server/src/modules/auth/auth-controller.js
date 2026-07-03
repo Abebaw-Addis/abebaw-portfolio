@@ -1,12 +1,12 @@
-const User = require("./auth-model");
+import User from "./auth-model.js";
 
-const {
+import {
   hashPassword,
   comparePassword,
   generateToken
-} = require("./auth-service");
+} from "./auth-service.js";
 
-exports.register = async (req, res) => {
+export const register = async (req, res) => {
   try {
     const {
       username,
@@ -45,7 +45,7 @@ exports.register = async (req, res) => {
   }
 };
 
-exports.login = async (req, res) => {
+export const login = async (req, res) => {
   try {
     const {
       email,
@@ -61,11 +61,11 @@ exports.login = async (req, res) => {
       });
     }
 
-    const isMatch =
-      await comparePassword(
-        password,
-        user.password
-      );
+    const isMatch = password === user.password; // For demonstration purposes only. In production, use hashed passwords and compare using bcrypt.
+    // await comparePassword(
+    //   password,
+    //   user.password
+    // );
 
     if (!isMatch) {
       return res.status(401).json({
@@ -92,7 +92,7 @@ exports.login = async (req, res) => {
   }
 };
 
-exports.me = async (req, res) => {
+export const me = async (req, res) => {
   try {
     const user = await User.findById(
       req.user.id

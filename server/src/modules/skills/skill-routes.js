@@ -1,13 +1,14 @@
-const router = require("express").Router();
+import express from "express";
+const router = express.Router();
 
-const {
+import {
   createSkill,
   getSkills,
   updateSkill,
   deleteSkill
-} = require("./skill-controller");
+} from "./skill-controller.js";
 
-const auth = require("../../middleware/auth-middleware");
+import auth from "../../middleware/auth-middleware.js";
 
 // Public route (frontend portfolio)
 router.get("/", getSkills);
@@ -17,4 +18,4 @@ router.post("/", auth, createSkill);
 router.put("/:id", auth, updateSkill);
 router.delete("/:id", auth, deleteSkill);
 
-module.exports = router;
+export default router;

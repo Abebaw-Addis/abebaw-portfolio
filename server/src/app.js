@@ -1,9 +1,9 @@
-const express = require("express");
-const cors = require("cors");
-const helmet = require("helmet");
-const morgan = require("morgan");
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
 
-const routes = require("./routes");
+import routes from "./routes.js";
 
 const app = express();
 
@@ -16,4 +16,4 @@ app.use(morgan("dev"));
 
 app.use("/api", routes);
 
-module.exports = app;
+export default app;

@@ -1,36 +1,9 @@
 import { useState } from "react";
-import aidmsTeam from "../../assets/aidms team.jpg";
-import unityLeader from "../../assets/unity-leader.jpg";
-import unityMember from "../../assets/unity-member.jpg";
+import { useSelector } from "react-redux";
 import galleryHero from "../../assets/user.png";
 
 const Gallery = () => {
-  const galleryItems = [
-    {
-      src: aidmsTeam,
-      title: "AI-DMS Team",
-      description: "A snapshot of the AI-Based IDS team collaboration.",
-      technologies: ["Python", "TensorFlow", "Scapy"],
-    },
-    {
-      src: unityLeader,
-      title: "Team Leader",
-      description: "Leadership and direction for the project development cycle.",
-      technologies: ["React", "Node", "MongoDB"],
-    },
-    {
-      src: unityMember,
-      title: "Team Member",
-      description: "A team member contributing to the project build and integration.",
-      technologies: ["Android", "Java", "MySQL"],
-    },
-    {
-      src: galleryHero,
-      title: "Portfolio Hero",
-      description: "Artistically styled portfolio preview as a gallery hero image.",
-      technologies: ["Design", "UX", "Branding"],
-    },
-  ];
+  const galleryItems = useSelector((state) => state.gallery.galleryItems);
   const [index, setIndex] = useState(-1);
 
   return (
@@ -53,7 +26,7 @@ const Gallery = () => {
           Browse curated gallery images from the assets folder.
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-          {galleryItems.map((item, i) => (
+          {(galleryItems || []).map((item, i) => (
             <button
               key={i}
               type="button"

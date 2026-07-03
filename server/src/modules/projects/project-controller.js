@@ -1,6 +1,6 @@
-const projectService = require("./project-service");
+import * as projectService from "./project-service.js";
 
-exports.createProject = async (req, res) => {
+export const createProject = async (req, res) => {
   try {
     const project = await projectService.createProject(req.body);
 
@@ -15,7 +15,7 @@ exports.createProject = async (req, res) => {
   }
 };
 
-exports.getProjects = async (req, res) => {
+export const getProjects = async (req, res) => {
   try {
     const { category } = req.query;
 
@@ -41,7 +41,7 @@ exports.getProjects = async (req, res) => {
   }
 };
 
-exports.updateProject = async (req, res) => {
+export const updateProject = async (req, res) => {
   try {
     const project =
       await projectService.updateProject(
@@ -60,7 +60,7 @@ exports.updateProject = async (req, res) => {
   }
 };
 
-exports.deleteProject = async (req, res) => {
+export const deleteProject = async (req, res) => {
   try {
     await projectService.deleteProject(req.params.id);
 

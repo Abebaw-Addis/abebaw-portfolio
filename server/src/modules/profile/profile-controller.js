@@ -1,6 +1,6 @@
-const Profile = require("./profile-model");
+import Profile from "./profile-model.js";
 
-exports.getProfile = async (req, res) => {
+export const getProfile = async (req, res) => {
   try {
     const profile = await Profile.findOne();
 
@@ -12,7 +12,7 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-exports.updateProfile = async (req, res) => {
+export const updateProfile = async (req, res) => {
   try {
     const profile = await Profile.findOneAndUpdate(
       {},

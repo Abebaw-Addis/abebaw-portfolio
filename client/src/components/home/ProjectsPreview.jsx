@@ -5,9 +5,7 @@ import Gallery from "./Gallery";
 
 const ProjectsPreview = () => {
   const dispatch = useDispatch();
-  const { projects, loading, error } = useSelector(
-    (state) => state.projects
-  );
+  const { projects, loading, error } = useSelector((state) => state.projects);
 
   useEffect(() => {
     dispatch(fetchProjects());
@@ -16,16 +14,21 @@ const ProjectsPreview = () => {
   return (
     <section id="projects" className="py-20 bg-slate-50 transition-colors duration-300 dark:bg-slate-950">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="mb-12 text-center">
-          <p className="text-sm uppercase tracking-[0.35em] text-sky-500">
-            Projects
-          </p>
-          <h2 className="mt-4 text-4xl font-bold text-slate-950 dark:text-white md:text-5xl">
-            Selected work with modern stacks
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-slate-600 dark:text-slate-300">
-            Showcasing technologies used, GitHub source links, live demos, and optional visuals for each project.
-          </p>
+        <div className="mb-12 flex flex-col gap-4 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
+          <div>
+            <p className="text-sm uppercase tracking-[0.35em] text-sky-500">
+              Projects
+            </p>
+            <h2 className="mt-4 text-4xl font-bold text-slate-950 dark:text-white md:text-5xl">
+              Selected work with modern stacks
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-slate-600 dark:text-slate-300 sm:mx-0">
+              Showcasing technologies used, GitHub source links, live demos, and optional visuals for each project.
+            </p>
+          </div>
+          <div className="rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-medium text-sky-700 dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-300">
+            {projects?.length || 0} project entries
+          </div>
         </div>
 
         {loading && (
@@ -36,7 +39,7 @@ const ProjectsPreview = () => {
         )}
 
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {(projects || []).map((p, i) => (
+          {Array.isArray(projects) ? projects.map((p, i) => (
             <article
               key={i}
               className="group overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-glow transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-700 dark:bg-slate-900"
@@ -70,7 +73,7 @@ const ProjectsPreview = () => {
                 </p>
 
                 <div className="mt-5 flex flex-wrap gap-2">
-                  {p.technologies.map((tech) => (
+                  {(Array.isArray(p.technologies) ? p.technologies : []).map((tech) => (
                     <span
                       key={tech}
                       className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200"
@@ -95,7 +98,7 @@ const ProjectsPreview = () => {
                     <a
                       href={p.live}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       className="inline-flex items-center rounded-full bg-sky-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-sky-600"
                     >
                       Live demo
@@ -104,7 +107,7 @@ const ProjectsPreview = () => {
                 </div>
               </div>
             </article>
-          ))}
+          )) : null}
         </div>
 
         <Gallery projects={projects} />

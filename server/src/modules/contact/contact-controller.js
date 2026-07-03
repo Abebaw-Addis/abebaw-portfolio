@@ -1,6 +1,6 @@
-const nodemailer = require("nodemailer");
+import nodemailer from "nodemailer";
 
-const sendContactEmail = async (req, res) => {
+export const sendContactEmail = async (req, res) => {
   const { name, email, subject, message } = req.body;
 
   if (!name || !email || !message) {
@@ -36,5 +36,3 @@ const sendContactEmail = async (req, res) => {
     return res.status(500).json({ success: false, message: "Failed to send email" });
   }
 };
-
-module.exports = { sendContactEmail };

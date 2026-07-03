@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { login as loginAction, logout as logoutAction } from "../../features/auth/authSlice";
 
 const navItems = [
   { label: "Home", href: "#home" },
@@ -8,8 +10,42 @@ const navItems = [
   { label: "Contact", href: "#contact" },
 ];
 
-const Navbar = ({ theme, toggleTheme }) => {
+const Navbar = ({ theme, toggleTheme, authorizedDevice, showAdminLogin, onAuthorize, onLogout }) => {
   const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+
+  const dispatch = useDispatch();
+  const auth = useSelector((state) => state.auth);
+
+  const shouldShowAdminLogin = Boolean(showAdminLogin) || Boolean(authorizedDevice);
+
+  const handleLogin = async (event) => {
+    event.preventDefault();
+
+    if (showAdminLogin) {
+      // perform real auth against backend
+      try {
+        await dispatch(loginAction({ email, password })).unwrap();
+        setLoginError("");
+        setEmail("");
+        setPassword("");
+      } catch (err) {
+        setLoginError(err || "Login failed");
+      }
+      return;
+    }
+
+    const ok = onAuthorize(email);
+    if (!ok) {
+      setLoginError("Only authorized device emails can access the dashboard.");
+      return;
+    }
+
+    setLoginError("");
+    setEmail("");
+  };
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-slate-200/10 bg-white/80 backdrop-blur dark:border-slate-700 dark:bg-slate-950/90">
@@ -33,6 +69,42 @@ const Navbar = ({ theme, toggleTheme }) => {
               {item.label}
             </a>
           ))}
+          {shouldShowAdminLogin ? (
+            authorizedDevice || auth?.user ? (
+              <button
+                type="button"
+                onClick={() => {
+                  // support both device logout and auth logout
+                  if (auth?.user) dispatch(logoutAction());
+                  onLogout();
+                }}
+                className="rounded-full bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100"
+              >
+                Logout
+              </button>
+            ) : (
+              <form onSubmit={handleLogin} className="flex items-center gap-2">
+                <input
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="Email"
+                  className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                />
+                {showAdminLogin ? (
+                  <input
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="Password"
+                    type="password"
+                    className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                  />
+                ) : null}
+                <button type="submit" className="rounded-full bg-sky-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-sky-600">
+                  Login
+                </button>
+              </form>
+            )
+          ) : null}
           <button
             onClick={toggleTheme}
             className="rounded-full border border-slate-200/80 bg-slate-100 p-2 text-slate-700 transition hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
@@ -52,7 +124,7 @@ const Navbar = ({ theme, toggleTheme }) => {
         </div>
       </div>
 
-        <div className={`${open ? "block" : "hidden"} border-t border-slate-200/10 bg-white/95 py-4 dark:border-slate-700 dark:bg-slate-950/95 md:hidden`}>
+      <div className={`${open ? "block" : "hidden"} border-t border-slate-200/10 bg-white/95 py-4 dark:border-slate-700 dark:bg-slate-950/95 md:hidden`}>
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 text-slate-700 dark:text-slate-200">
           {navItems.map((item) => (
             <a
@@ -64,6 +136,35 @@ const Navbar = ({ theme, toggleTheme }) => {
               {item.label}
             </a>
           ))}
+          {shouldShowAdminLogin ? (
+            authorizedDevice ? (
+              <button type="button" onClick={onLogout} className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100">
+                Logout
+              </button>
+              ) : (
+              <form onSubmit={handleLogin} className="mt-2 flex flex-col gap-2">
+                <input
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="Email"
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                />
+                {showAdminLogin ? (
+                  <input
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="Password"
+                    type="password"
+                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                  />
+                ) : null}
+                <button type="submit" className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-600">
+                  Login
+                </button>
+              </form>
+            )
+          ) : null}
+          {loginError || auth?.message ? <p className="text-sm text-red-500">{loginError || auth?.message}</p> : null}
           <button
             onClick={() => {
               setOpen(false);

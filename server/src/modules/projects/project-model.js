@@ -1,41 +1,45 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const projectSchema = new mongoose.Schema(
   {
-    name: {
+    title: {
       type: String,
       required: true,
       trim: true
     },
 
-    category: {
+    description: {
       type: String,
       required: true,
-      enum: [
-        "Frontend",
-        "Backend",
-        "Database",
-        "AI/ML",
-        "Cybersecurity",
-        "DevOps",
-        "Language",
-        "Other"
-      ]
+      trim: true
     },
 
-    level: {
-      type: Number,
-      required: true,
-      min: 0,
-      max: 100
+    technologies: {
+      type: [String],
+      default: []
     },
 
-    icon: {
+    github: {
       type: String,
       default: ""
-    }
+    },
+
+    live: {
+      type: String,
+      default: ""
+    },
+
+    image: {
+      type: String,
+      default: ""
+    },
+
+    featured: {
+      type: Boolean,
+      default: false
+    },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Project", projectSchema);
+export default mongoose.model("Project", projectSchema);

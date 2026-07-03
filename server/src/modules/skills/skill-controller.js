@@ -1,6 +1,6 @@
-const skillService = require("./skill-service");
+import * as skillService from "./skill-service.js";
 
-exports.createSkill = async (req, res) => {
+export const createSkill = async (req, res) => {
   try {
     const skill = await skillService.createSkill(req.body);
 
@@ -15,7 +15,7 @@ exports.createSkill = async (req, res) => {
   }
 };
 
-exports.getSkills = async (req, res) => {
+export const getSkills = async (req, res) => {
   try {
     const { category } = req.query;
 
@@ -41,7 +41,7 @@ exports.getSkills = async (req, res) => {
   }
 };
 
-exports.updateSkill = async (req, res) => {
+export const updateSkill = async (req, res) => {
   try {
     const skill =
       await skillService.updateSkill(
@@ -60,7 +60,7 @@ exports.updateSkill = async (req, res) => {
   }
 };
 
-exports.deleteSkill = async (req, res) => {
+export const deleteSkill = async (req, res) => {
   try {
     await skillService.deleteSkill(req.params.id);
 

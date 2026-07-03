@@ -66,6 +66,12 @@ export const skillsData = [
         icon: "",
     },
     {
+        name: "FastAPI",
+        category: "Backend",
+        level: 55,
+        icon: "",
+    },
+    {
         name: "HTML",
         category: "Frontend",
         level: 90,

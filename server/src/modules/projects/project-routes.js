@@ -1,13 +1,14 @@
-const router = require("express").Router();
+import express from "express";
+const router = express.Router();
 
-const {
+import {
   createProject,
   getProjects,
   updateProject,
   deleteProject
-} = require("./project-controller");
+} from "./project-controller.js";
 
-const auth = require("../../middleware/auth-middleware");
+import auth from "../../middleware/auth-middleware.js";
 
 // Public route (frontend portfolio)
 router.get("/", getProjects);
@@ -17,4 +18,4 @@ router.post("/", auth, createProject);
 router.put("/:id", auth, updateProject);
 router.delete("/:id", auth, deleteProject);
 
-module.exports = router;
+export default router;
