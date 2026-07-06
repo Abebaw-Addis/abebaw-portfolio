@@ -3,6 +3,7 @@ import Stats from "../components/home/Stats";
 import SkillsPreview from "../components/home/SkillsPreview";
 import ProjectsPreview from "../components/home/ProjectsPreview";
 import CTA from "../components/home/CTA";
+import Footer from "../components/home/Footer";
 
 const Home = () => {
   return (
@@ -12,6 +13,7 @@ const Home = () => {
       <SkillsPreview />
       <ProjectsPreview />
       <CTA />
+      <Footer />
     </>
   );
 };

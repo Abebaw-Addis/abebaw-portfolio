@@ -2,29 +2,16 @@ import mongoose from "mongoose";
 
 const profileSchema = new mongoose.Schema(
   {
-    fullName: {
+    key: {
       type: String,
       required: true
     },
 
-    title: {
+    value: [{
       type: String,
       required: true
     },
-
-    bio: String,
-
-    email: String,
-
-    phone: String,
-
-    github: String,
-
-    linkedin: String,
-
-    profileImage: String,
-
-    resumeUrl: String
+    ]
   },
   {
     timestamps: true

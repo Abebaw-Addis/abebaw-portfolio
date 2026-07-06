@@ -1,14 +1,24 @@
-export const profileData = {
-  fullName: "Abebaw",
-  title: "Software Engineer | Web Developer | AI & Cybersecurity Enthusiast",
-  bio: "I build scalable full-stack apps, AI systems, and secure web platforms.",
-  email: "abebaw@gmail.com",
-  phone: "",
-  github: "",
-  linkedin: "",
-  image: "",
-  resume: "",
-  intro: "Hello, I'm",
+import userImage from "../assets/user.png"; 
+
+export const profileData = [
+  { key: "fullName", value: ["Abebaw"] },
+  { key: "title", value: ["Software Engineer | Web Developer | AI & Cybersecurity Enthusiast"] },
+  { key: "bio", value: ["I build scalable full-stack apps, AI systems, and secure web platforms."] },
+  { key: "email", value: ["abadis1221@gmail.com"] },
+  { key: "phone", value: ["+251-915-507-731"] },
+  { key: "github", value: ["https://github.com/Abebaw-Addis"] },
+  { key: "linkedin", value: ["www.linkedin.com/in/abebaw-addis-ze21"] },
+  { key: "image", value: [userImage] },
+  { key: "profileImage", value: [userImage] },
+  { key: "resume", value: [""] },
+  { key: "intro", value: ["Hello, I'm"] },
+  { key: "contactTitle", value: ["Let's Work Together"] },
+  { key: "contactSubtitle", value: ["Open for internships, freelance projects, and collaborations."] },
+  { key: "contactSubmitLabel", value: ["Send Message"] },
+  { key: "contactEmail", value: ["abadis1221@gmail.com"] },
+];
+
+export const profileContentData = {
   highlights: [
     "Build responsive, production-ready web apps.",
     "Deliver secure solutions with AI and cybersecurity best practices.",
@@ -18,10 +28,6 @@ export const profileData = {
     { label: "View Projects", href: "#projects", variant: "primary" },
     { label: "Contact Me", href: "#contact", variant: "secondary" },
   ],
-  contactTitle: "Let\'s Work Together",
-  contactSubtitle: "Open for internships, freelance projects, and collaborations.",
-  contactSubmitLabel: "Send Message",
-  contactEmail: "abadis1221@gmail.com",
   featureList: [
     "I build scalable full-stack apps with modern architecture.",
     "I make UI/UX responsive, clean, and accessible.",

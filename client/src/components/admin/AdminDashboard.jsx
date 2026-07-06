@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addGalleryItem, updateGalleryItem, deleteGalleryItem } from "../../features/gallery/gallerySlice";
 import { addProject, deleteProject, updateProject } from "../../features/projects/projectsSlice";
+import { createProfile, deleteProfile, updateProfile } from "../../features/profile/profileSlice";
 import { addSkill, deleteSkill, updateSkill } from "../../features/skills/skillsSlice";
 import FileDropzone from "./FileDropzone";
 
@@ -33,11 +34,17 @@ const emptyGalleryForm = {
   image: "",
 };
 
+const emptyProfileForm = {
+  key: "",
+  value: "",
+};
+
 const AdminDashboard = ({ deviceEmail, onLogout }) => {
   const dispatch = useDispatch();
   const skills = useSelector((state) => state.skills.skills);
   const projects = useSelector((state) => state.projects.projects);
   const galleryItems = useSelector((state) => state.gallery.galleryItems);
+  const profiles = useSelector((state) => state.profile.profiles || []);
 
   const [skillForm, setSkillForm] = useState(emptySkillForm);
   const [editingSkillId, setEditingSkillId] = useState(null);
@@ -49,6 +56,10 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
   const [galleryImagePreview, setGalleryImagePreview] = useState("");
   const [editingGalleryId, setEditingGalleryId] = useState(null);
   const [skillIconPreview, setSkillIconPreview] = useState("");
+  const [profileForm, setProfileForm] = useState(emptyProfileForm);
+  const [profileImageFile, setProfileImageFile] = useState(null);
+  const [profileImagePreview, setProfileImagePreview] = useState("");
+  const [editingProfileId, setEditingProfileId] = useState(null);
   const [toasts, setToasts] = useState([]);
   const [confirmDialog, setConfirmDialog] = useState({
     open: false,
@@ -60,6 +71,7 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
   const normalizedSkills = useMemo(() => skills || [], [skills]);
   const normalizedProjects = useMemo(() => projects || [], [projects]);
   const normalizedGalleryItems = useMemo(() => galleryItems || [], [galleryItems]);
+  const normalizedProfiles = useMemo(() => profiles || [], [profiles]);
 
   const showToast = (message, type = "success") => {
     const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -86,6 +98,13 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
     setGalleryForm(emptyGalleryForm);
     setGalleryImagePreview("");
     setEditingGalleryId(null);
+  };
+
+  const resetProfileForm = () => {
+    setProfileForm(emptyProfileForm);
+    setProfileImageFile(null);
+    setProfileImagePreview("");
+    setEditingProfileId(null);
   };
 
   const openConfirmDialog = (title, message, onConfirm) => {
@@ -207,6 +226,39 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
     resetGalleryForm();
   };
 
+  const handleProfileSubmit = (event) => {
+    event.preventDefault();
+    if (!profileForm.key.trim() && !profileImageFile) {
+      showToast("Please provide a profile key or upload an image.", "error");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+
+    if (profileImageFile) {
+      formData.append("image", profileImageFile);
+    }
+
+    if (profileForm.key.trim()) {
+      formData.append("key", profileForm.key.trim());
+    }
+
+    if (profileForm.value.trim()) {
+      formData.append("value", profileForm.value.trim());
+    }
+
+    if (editingProfileId) {
+      dispatch(updateProfile({ id: editingProfileId, data: formData, token }));
+      showToast("Profile item updated.");
+    } else {
+      dispatch(createProfile({ data: formData, token }));
+      showToast("Profile item added.");
+    }
+
+    resetProfileForm();
+  };
+
   const startEditingSkill = (skill) => {
     setSkillForm({
       name: skill.name || "",
@@ -242,6 +294,18 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
     setGalleryImagePreview(item.image || item.src || "");
     setEditingGalleryId(item.id || item._id || null);
     showToast("Editing gallery item.");
+  };
+
+  const startEditingProfile = (profile) => {
+    setProfileForm({
+      key: profile.key || "",
+      value: Array.isArray(profile.value) ? profile.value.join(", ") : profile.value || "",
+    });
+    const currentValue = Array.isArray(profile.value) ? profile.value[0] : profile.value || "";
+    setProfileImagePreview(currentValue && /^(https?:)?\/\//i.test(currentValue) ? currentValue : "");
+    setProfileImageFile(null);
+    setEditingProfileId(profile._id || profile.id || null);
+    showToast("Editing profile item.");
   };
 
   const handleSkillDelete = (skill) => {
@@ -298,6 +362,21 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
     }));
   };
 
+  const handleProfileImageSelect = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setProfileImageFile(file);
+    setProfileImagePreview(previewUrl);
+    setProfileForm((current) => ({
+      ...current,
+      key: current.key || "profileImage",
+    }));
+  };
+
   const handleProjectDelete = (project) => {
     openConfirmDialog(
       "Delete project?",
@@ -316,6 +395,18 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
       () => {
         dispatch(deleteGalleryItem(item.id || item._id));
         showToast("Gallery item removed.");
+      }
+    );
+  };
+
+  const handleProfileDelete = (profile) => {
+    openConfirmDialog(
+      "Delete profile item?",
+      `This will permanently remove ${profile.key || "this profile item"}.`,
+      () => {
+        const token = localStorage.getItem("token");
+        dispatch(deleteProfile({ id: profile._id || profile.id, token }));
+        showToast("Profile item removed.");
       }
     );
   };
@@ -545,6 +636,65 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      <div className="mt-8 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+        <div className="mb-4">
+          <h3 className="text-xl font-semibold text-slate-950 dark:text-white">Profile</h3>
+          <p className="text-sm text-slate-600 dark:text-slate-300">Manage key/value profile details such as full name, email, and profile image.</p>
+        </div>
+
+        <form onSubmit={handleProfileSubmit} className="space-y-3">
+          <input
+            value={profileForm.key}
+            onChange={(event) => setProfileForm((current) => ({ ...current, key: event.target.value }))}
+            placeholder="Profile key (e.g. fullName or profileImage)"
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+          />
+          <textarea
+            value={profileForm.value}
+            onChange={(event) => setProfileForm((current) => ({ ...current, value: event.target.value }))}
+            placeholder="Profile text value (optional for image entries)"
+            className="min-h-24 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+          />
+          <input type="file" accept="image/*" onChange={handleProfileImageSelect} className="w-full rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800" />
+          {(profileImagePreview || (profileForm.value && /^(https?:)?\/\//i.test(profileForm.value))) && (
+            <img src={profileImagePreview || profileForm.value} alt="Profile preview" className="h-24 w-24 rounded-2xl object-cover" />
+          )}
+          <div className="flex gap-3">
+            <button type="submit" className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-600">
+              {editingProfileId ? "Update profile item" : "Add profile item"}
+            </button>
+            <button type="button" onClick={resetProfileForm} className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-100">
+              Clear
+            </button>
+          </div>
+        </form>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {normalizedProfiles.map((profile) => (
+            <div key={profile._id || profile.id} className="rounded-3xl border border-slate-200 p-4 dark:border-slate-700">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-500">{profile.key}</p>
+                  {profile.key?.toLowerCase().includes("image") || /^(https?:)?\/\//i.test(Array.isArray(profile.value) ? profile.value[0] || "" : profile.value || "") ? (
+                    <img src={Array.isArray(profile.value) ? profile.value[0] : profile.value} alt={profile.key} className="mt-3 h-20 w-20 rounded-2xl object-cover" />
+                  ) : (
+                    <p className="mt-2 text-sm text-slate-700 dark:text-slate-200">{Array.isArray(profile.value) ? profile.value.join(", ") : profile.value}</p>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => startEditingProfile(profile)} className={iconButtonClass} aria-label={`Edit ${profile.key}`} title="Edit profile item">
+                    ✎
+                  </button>
+                  <button type="button" onClick={() => handleProfileDelete(profile)} className={`${iconButtonClass} text-red-600 hover:text-red-600 dark:text-red-300`} aria-label={`Delete ${profile.key}`} title="Delete profile item">
+                    🗑
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
