@@ -1,10 +1,21 @@
-import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import galleryHero from "../../assets/user.png";
+import { fetchGalleryItems } from "../../features/gallery/gallerySlice";
 
 const Gallery = () => {
-  const galleryItems = useSelector((state) => state.gallery.galleryItems);
+  const dispatch = useDispatch();
+  const { galleryItems } = useSelector((state) => state.gallery);
   const [index, setIndex] = useState(-1);
+  const [showAllGallery, setShowAllGallery] = useState(false);
+  const BASE_URL = import.meta.env.VITE_NODE_URL;
+
+  useEffect(() => {
+    dispatch(fetchGalleryItems());
+  }, [dispatch]);
+
+  const allGalleryItems = Array.isArray(galleryItems) ? galleryItems : [];
+  const visibleGalleryItems = showAllGallery ? allGalleryItems : allGalleryItems.slice(0, 8);
 
   return (
     <section className="mt-12">
@@ -26,7 +37,7 @@ const Gallery = () => {
           Browse curated gallery images from the assets folder.
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-          {(galleryItems || []).map((item, i) => (
+          {visibleGalleryItems.map((item, i) => (
             <button
               key={i}
               type="button"
@@ -34,7 +45,12 @@ const Gallery = () => {
               className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-0 text-left shadow transition hover:-translate-y-1 hover:shadow-lg dark:border-slate-700 dark:bg-slate-900"
               aria-label={`Open gallery item for ${item.title}`}
             >
-              <img src={item.src} alt={item.title} className="h-40 w-full object-cover" />
+              <img
+                src={
+                  item?.image?.startsWith("http")
+                    ? item.image
+                    : `${BASE_URL}/uploads/${item.image}`
+                } alt={item.title} className="h-40 w-full object-cover" />
               <div className="space-y-2 p-4">
                 <p className="text-sm font-semibold text-slate-900 dark:text-white">{item.title}</p>
                 <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{item.description}</p>
@@ -42,6 +58,18 @@ const Gallery = () => {
             </button>
           ))}
         </div>
+
+        {allGalleryItems.length > 8 ? (
+          <div className="mt-8 text-center">
+            <button
+              type="button"
+              onClick={() => setShowAllGallery((value) => !value)}
+              className="rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-sky-400 hover:text-sky-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            >
+              {showAllGallery ? "Show less" : "Show all gallery"}
+            </button>
+          </div>
+        ) : null}
       </div>
 
       {index >= 0 && (
@@ -74,16 +102,9 @@ const Gallery = () => {
               </div>
             </div>
             <div className="bg-slate-50 p-6 dark:bg-slate-950">
-              <img src={galleryItems[index].src} alt={galleryItems[index].title} className="mx-auto max-h-[65vh] w-full object-contain" />
+              <img src={galleryItems[index].image} alt={galleryItems[index].title} className="mx-auto max-h-[65vh] w-full object-contain" />
               <div className="mt-6 space-y-4 text-slate-700 dark:text-slate-300">
                 <p>{galleryItems[index].description}</p>
-                <div className="flex flex-wrap gap-2">
-                  {galleryItems[index].technologies.map((tech) => (
-                    <span key={tech} className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                      {tech}
-                    </span>
-                  ))}
-                </div>
               </div>
             </div>
           </div>

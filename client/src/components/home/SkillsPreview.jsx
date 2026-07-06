@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchSkills } from "../../features/skills/skillsSlice";
 
@@ -17,6 +17,7 @@ const groupSkillsByCategory = (skills = []) =>
 const SkillsPreview = () => {
   const dispatch = useDispatch();
   const skills = useSelector((state) => state.skills?.skills ?? []);
+  const [showAllSkills, setShowAllSkills] = useState(false);
   const skillsByCategory = groupSkillsByCategory(skills);
 
   useEffect(() => {
@@ -37,8 +38,9 @@ const SkillsPreview = () => {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {Object.entries(skillsByCategory).map(
-            ([category, categorySkills]) => (
+          {Object.entries(skillsByCategory)
+            .slice(0, showAllSkills ? undefined : 2)
+            .map(([category, categorySkills]) => (
               <div
                 key={category}
                 className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg transition-colors duration-300 dark:border-slate-700 dark:bg-slate-900"
@@ -63,9 +65,20 @@ const SkillsPreview = () => {
                   ))}
                 </div>
               </div>
-            )
-          )}
+            ))}
         </div>
+
+        {Object.keys(skillsByCategory).length > 2 ? (
+          <div className="mt-8 text-center">
+            <button
+              type="button"
+              onClick={() => setShowAllSkills((value) => !value)}
+              className="rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-sky-400 hover:text-sky-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            >
+              {showAllSkills ? "Show less" : "Show all skills"}
+            </button>
+          </div>
+        ) : null}
       </div>
     </section>
   );

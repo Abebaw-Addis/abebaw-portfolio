@@ -1,15 +1,15 @@
 import { deleteFromCloudinary } from "../../utils/cloudinaryDeleteHelper.js";
 import { uploadToCloudinary } from "../../utils/cloudinaryUploadHelper.js";
 import { createUpload } from "../../utils/multerHelper.js";
-import Project from "./project-model.js";
+import Gallery from "./gallery-model.js";
 
 // Storage argument undefined as we set a default storage memory
-export const uploadProjectImages = createUpload(undefined, {
+export const uploadGalleryImages = createUpload(undefined, {
   limits: { fileSize: 5 * 1024 * 1024 },
   allowedTypes: ["image/jpeg", "image/png", "image/jpg", "image/webp"],
 });
 
-export const createProject = async (req, res) => {
+export const createGallery = async (req, res) => {
   try {
 
     let imageUrl = req.body.image || "";
@@ -18,27 +18,21 @@ export const createProject = async (req, res) => {
     if (req.file) {
       const uploadResult = await uploadToCloudinary(
         req.file,
-        "portfolio/projects",
+        "portfolio/gallery",
         "image"
       );
 
       imageUrl = uploadResult.url;
     }
 
-    const technologies =
-      typeof req.body.technologies === "string"
-        ? JSON.parse(req.body.technologies)
-        : [];
-
-    const project = await Project.create({
+    const gallery = await Gallery.create({
       ...req.body,
-      technologies,
       image: imageUrl,
     });
 
     res.status(201).json({
       success: true,
-      data: project
+      data: gallery
     });
   } catch (error) {
     res.status(500).json({
@@ -47,22 +41,22 @@ export const createProject = async (req, res) => {
   }
 };
 
-export const getProjects = async (req, res) => {
+export const getGalleries = async (req, res) => {
   try {
     const { category } = req.query;
 
-    let projects;
+    let galleries;
 
     if (category) {
-      projects =
-        await Project.find({ category }).sort({ createdAt: -1 })
+      galleries =
+        await Gallery.find({ category }).sort({ createdAt: -1 })
     } else {
-      projects = await Project.find().sort({ createdAt: -1 });
+      galleries = await Gallery.find().sort({ createdAt: -1 });
     }
 
     res.status(200).json({
       success: true,
-      data: projects
+      data: galleries
     });
   } catch (error) {
     res.status(500).json({
@@ -71,32 +65,27 @@ export const getProjects = async (req, res) => {
   }
 };
 
-export const updateProject = async (req, res) => {
+export const updateGallery = async (req, res) => {
   try {
-    const existingProject = await Project.findById(req.params.id);
-    if (!existingProject) {
+    const existingGallery = await Gallery.findById(req.params.id);
+    if (!existingGallery) {
       return res.status(404).json({
         success: false,
-        message: "Project not found"
+        message: "Gallery not found"
       });
     }
 
-    const technologies =
-      typeof req.body.technologies === "string"
-        ? JSON.parse(req.body.technologies)
-        : [];
-
     // Handle image upload to Cloudinary if a new image is provided
-    let imageUrl = req.body.image || existingProject.image;
+    let imageUrl = req.body.image || existingGallery.image;
 
     if (req.file) {
-      if (existingProject.image) {
-        await deleteFromCloudinary(existingProject.image);
+      if (existingGallery.image) {
+        await deleteFromCloudinary(existingGallery.image);
       }
 
       const uploadResult = await uploadToCloudinary(
         req.file,
-        "portfolio/projects",
+        "portfolio/gallery",
         "image"
       );
 
@@ -105,7 +94,7 @@ export const updateProject = async (req, res) => {
 
     req.body.image = imageUrl;
 
-    const project = await Project.findByIdAndUpdate(
+    const gallery = await Gallery.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true }
@@ -113,7 +102,7 @@ export const updateProject = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: project
+      data: gallery
     });
   } catch (error) {
     res.status(500).json({
@@ -122,30 +111,30 @@ export const updateProject = async (req, res) => {
   }
 };
 
-export const deleteProject = async (req, res) => {
+export const deleteGallery = async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id);
-    if (!project) {
+    const gallery = await Gallery.findById(req.params.id);
+    if (!gallery) {
       return res.status(404).json({
         success: false,
-        message: "Project not found"
+        message: "Gallery not found"
       });
     }
 
     // Delete the image from Cloudinary if it exists
-    if (project.image) {
+    if (gallery.image) {
       try {
-        await deleteFromCloudinary(project.image);
+        await deleteFromCloudinary(gallery.image);
       } catch (cloudinaryError) {
         console.error("Error deleting Cloudinary image:", cloudinaryError);
       }
     }
 
-    await Project.findByIdAndDelete(req.params.id);
+    await Gallery.findByIdAndDelete(req.params.id);
 
     res.status(200).json({
       success: true,
-      message: "Project deleted"
+      message: "Gallery deleted"
     });
   } catch (error) {
     res.status(500).json({

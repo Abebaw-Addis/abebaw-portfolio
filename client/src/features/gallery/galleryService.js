@@ -1,9 +1,15 @@
 import axios from "axios";
 
-const API = `${import.meta.env.VITE_NODE_URL}/api/skills`;
+const API = `${import.meta.env.VITE_NODE_URL}/api/gallery`;
 const getToken = () => localStorage.getItem("token");
 
-export const createSkillAPI = async (data) => {
+export const fetchGalleryItemsAPI = async () => {
+  const res = await axios.get(API);
+
+  return res.data;
+};
+
+export const createGalleryItemAPI = async (data) => {
   const token = getToken();
   const res = await axios.post(API, data, {
     headers: {
@@ -13,13 +19,7 @@ export const createSkillAPI = async (data) => {
   return res.data;
 };
 
-export const fetchSkillsAPI = async () => {
-  const res = await axios.get(API);
-
-  return res.data;
-};
-
-export const updateSkillAPI = async (id, updates) => {
+export const updateGalleryItemAPI = async (id, updates) => {
   const token = getToken();
   const res = await axios.put(`${API}/${id}`, updates, {
     headers: {
@@ -29,7 +29,7 @@ export const updateSkillAPI = async (id, updates) => {
   return res.data;
 };
 
-export const deleteSkillAPI = async (id) => {
+export const deleteGalleryItemAPI = async (id) => {
   const token = getToken();
   const res = await axios.delete(`${API}/${id}`, {
     headers: {

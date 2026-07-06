@@ -1,8 +1,8 @@
-import * as skillService from "./skill-service.js";
+import Skill from "./skill-model.js";
 
 export const createSkill = async (req, res) => {
   try {
-    const skill = await skillService.createSkill(req.body);
+    const skill = await Skill.create(req.body);
 
     res.status(201).json({
       success: true,
@@ -23,11 +23,9 @@ export const getSkills = async (req, res) => {
 
     if (category) {
       skills =
-        await skillService.getSkillsByCategory(
-          category
-        );
+        await Skill.find({ category });
     } else {
-      skills = await skillService.getSkills();
+      skills = await Skill.find().sort({ level: -1 });
     }
 
     res.status(200).json({
@@ -44,10 +42,9 @@ export const getSkills = async (req, res) => {
 export const updateSkill = async (req, res) => {
   try {
     const skill =
-      await skillService.updateSkill(
-        req.params.id,
-        req.body
-      );
+      await Skill.findByIdAndUpdate(req.params.id, req.body, {
+        new: true
+      });
 
     res.status(200).json({
       success: true,
@@ -62,7 +59,7 @@ export const updateSkill = async (req, res) => {
 
 export const deleteSkill = async (req, res) => {
   try {
-    await skillService.deleteSkill(req.params.id);
+    await Skill.findByIdAndDelete(req.params.id);
 
     res.status(200).json({
       success: true,

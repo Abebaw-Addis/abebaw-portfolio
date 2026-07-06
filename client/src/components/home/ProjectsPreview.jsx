@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProjects } from "../../features/projects/projectsSlice";
 import Gallery from "./Gallery";
@@ -6,10 +6,18 @@ import Gallery from "./Gallery";
 const ProjectsPreview = () => {
   const dispatch = useDispatch();
   const { projects, loading, error } = useSelector((state) => state.projects);
+  const [showAllProjects, setShowAllProjects] = useState(false);
+  const BASE_URL = import.meta.env.VITE_NODE_URL;
 
   useEffect(() => {
     dispatch(fetchProjects());
   }, [dispatch]);
+
+  const visibleProjects = Array.isArray(projects)
+    ? showAllProjects
+      ? projects
+      : projects.slice(0, 3)
+    : [];
 
   return (
     <section id="projects" className="py-20 bg-slate-50 transition-colors duration-300 dark:bg-slate-950">
@@ -39,14 +47,18 @@ const ProjectsPreview = () => {
         )}
 
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {Array.isArray(projects) ? projects.map((p, i) => (
+          {visibleProjects.map((p, i) => (
             <article
               key={i}
-              className="group overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-glow transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-700 dark:bg-slate-900"
+              className="group overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white transition duration-300 hover:-translate-y-1 dark:border-slate-700 dark:bg-slate-900"
             >
               {p.image ? (
                 <img
-                  src={p.image}
+                  src={
+                    p.image.startsWith("http")
+                      ? p.image
+                      : `${BASE_URL}/uploads/${p.image}`
+                  }
                   alt={p.title}
                   className="h-52 w-full object-cover"
                 />
@@ -107,8 +119,20 @@ const ProjectsPreview = () => {
                 </div>
               </div>
             </article>
-          )) : null}
+          ))}
         </div>
+
+        {Array.isArray(projects) && projects.length > 3 ? (
+          <div className="mt-8 text-center">
+            <button
+              type="button"
+              onClick={() => setShowAllProjects((value) => !value)}
+              className="rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-sky-400 hover:text-sky-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            >
+              {showAllProjects ? "Show less" : "Show all projects"}
+            </button>
+          </div>
+        ) : null}
 
         <Gallery projects={projects} />
       </div>

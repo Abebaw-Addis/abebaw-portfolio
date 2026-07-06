@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import AdminDashboard from "./components/admin/AdminDashboard";
 import Navbar from "./components/layout/Navbar";
 import { logout as logoutAction } from "./features/auth/authSlice";
-import { setTheme } from "./features/ui/uiSlice";
+import { setTheme, toggleTheme as toggleThemeAction } from "./features/ui/uiSlice";
 import Home from "./pages/Home";
 
 const allowedEmails = ["abadis1221@gmail.com", "dbu1402806@gmail.com", "dbu1402806@dbu.edu.et"];
@@ -48,7 +48,7 @@ function App() {
   }, [theme]);
 
   const toggleTheme = () => {
-    dispatch(toggleTheme());
+    dispatch(toggleThemeAction());
   };
 
   const handleAuthorize = (email) => {

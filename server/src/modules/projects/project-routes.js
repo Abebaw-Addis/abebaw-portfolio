@@ -5,7 +5,8 @@ import {
   createProject,
   getProjects,
   updateProject,
-  deleteProject
+  deleteProject,
+  uploadProjectImages
 } from "./project-controller.js";
 
 import auth from "../../middleware/auth-middleware.js";
@@ -14,8 +15,8 @@ import auth from "../../middleware/auth-middleware.js";
 router.get("/", getProjects);
 
 // Protected routes (admin dashboard)
-router.post("/", auth, createProject);
-router.put("/:id", auth, updateProject);
+router.post("/", auth, uploadProjectImages.single('image'), createProject);
+router.put("/:id", auth, uploadProjectImages.single('image'), updateProject);
 router.delete("/:id", auth, deleteProject);
 
 export default router;

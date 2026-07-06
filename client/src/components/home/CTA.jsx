@@ -34,18 +34,18 @@ const CTA = () => {
 
   return (
     <section id="contact" className="py-24 bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
-      <div className="mx-auto max-w-4xl px-6">
-        <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
-          <div className="space-y-6 rounded-[2rem] border border-slate-200 bg-white/90 p-10 shadow-xl shadow-slate-200/30 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-black/20">
+      <div className="mx-auto max-w-5xl px-6">
+        <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
+          <div className="rounded-[2rem] border border-slate-200 bg-white/90 p-8 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
             <div className="max-w-xl">
               <p className="text-sm uppercase tracking-[0.35em] text-sky-500">Contact</p>
-              <h2 className="mt-4 text-4xl font-semibold sm:text-5xl">Let&apos;s Work Together</h2>
+              <h2 className="mt-4 text-4xl font-semibold sm:text-5xl">Let&apos;s build something meaningful</h2>
               <p className="mt-4 text-lg leading-8 text-slate-600 dark:text-slate-300">
-                I&apos;m available for internships, freelance projects, and collaborations. Share your idea and I&apos;ll get back to you with a thoughtful reply.
+                I&apos;m available for internships, freelance work, and product collaborations. Share your idea and I&apos;ll get back to you with a thoughtful reply.
               </p>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
               <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-700 dark:bg-slate-950">
                 <p className="text-sm text-slate-500 dark:text-slate-400">Email</p>
                 <p className="mt-2 font-semibold text-slate-900 dark:text-white">abadis1221@gmail.com</p>
@@ -57,7 +57,7 @@ const CTA = () => {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="rounded-[2rem] border border-slate-200 bg-white/90 p-8 shadow-xl shadow-slate-200/30 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-black/20">
+          <form onSubmit={handleSubmit} className="rounded-[2rem] border border-slate-200 bg-white/90 p-8 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
             <div className="grid gap-4 sm:grid-cols-2">
               <input
                 name="name"
@@ -83,7 +83,7 @@ const CTA = () => {
               value={form.subject}
               onChange={handleChange}
               placeholder="Subject"
-              className="w-full rounded-3xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-sky-400 dark:focus:ring-slate-700"
+              className="mt-4 w-full rounded-3xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-sky-400 dark:focus:ring-slate-700"
             />
 
             <textarea
@@ -93,7 +93,7 @@ const CTA = () => {
               placeholder="Message"
               required
               rows={6}
-              className="w-full rounded-3xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-sky-400 dark:focus:ring-slate-700"
+              className="mt-4 w-full rounded-3xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-sky-400 dark:focus:ring-slate-700"
             />
 
             <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -105,7 +105,7 @@ const CTA = () => {
 
               <button
                 type="submit"
-                className="inline-flex items-center justify-center rounded-full bg-sky-600 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center justify-center rounded-full bg-sky-600 px-8 py-3 text-sm font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={status === "sending"}
               >
                 Send Message

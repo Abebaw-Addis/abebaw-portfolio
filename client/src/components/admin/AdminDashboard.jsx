@@ -1,9 +1,8 @@
 import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addGalleryItem, removeGalleryItem } from "../../features/gallery/gallerySlice";
+import { addGalleryItem, updateGalleryItem, deleteGalleryItem } from "../../features/gallery/gallerySlice";
 import { addProject, deleteProject, updateProject } from "../../features/projects/projectsSlice";
 import { addSkill, deleteSkill, updateSkill } from "../../features/skills/skillsSlice";
-import { uploadImageAPI } from "../../features/upload/uploadService";
 import FileDropzone from "./FileDropzone";
 
 const skillCategories = ["Frontend", "Backend", "Database", "AI/ML", "Cybersecurity", "DevOps", "Language", "Other"];
@@ -31,8 +30,7 @@ const emptyProjectForm = {
 const emptyGalleryForm = {
   title: "",
   description: "",
-  technologies: "",
-  src: "",
+  image: "",
 };
 
 const AdminDashboard = ({ deviceEmail, onLogout }) => {
@@ -46,15 +44,31 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
   const [projectForm, setProjectForm] = useState(emptyProjectForm);
   const [projectImagePreview, setProjectImagePreview] = useState("");
   const [editingProjectId, setEditingProjectId] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [galleryForm, setGalleryForm] = useState(emptyGalleryForm);
   const [galleryImagePreview, setGalleryImagePreview] = useState("");
+  const [editingGalleryId, setEditingGalleryId] = useState(null);
   const [skillIconPreview, setSkillIconPreview] = useState("");
-  const [uploading, setUploading] = useState(false);
-  const [feedback, setFeedback] = useState("");
+  const [toasts, setToasts] = useState([]);
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: "",
+    message: "",
+    onConfirm: null,
+  });
 
   const normalizedSkills = useMemo(() => skills || [], [skills]);
   const normalizedProjects = useMemo(() => projects || [], [projects]);
   const normalizedGalleryItems = useMemo(() => galleryItems || [], [galleryItems]);
+
+  const showToast = (message, type = "success") => {
+    const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    setToasts((current) => [...current, { id, message, type }]);
+
+    window.setTimeout(() => {
+      setToasts((current) => current.filter((toast) => toast.id !== id));
+    }, 3200);
+  };
 
   const resetSkillForm = () => {
     setSkillForm(emptySkillForm);
@@ -71,12 +85,28 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
   const resetGalleryForm = () => {
     setGalleryForm(emptyGalleryForm);
     setGalleryImagePreview("");
+    setEditingGalleryId(null);
+  };
+
+  const openConfirmDialog = (title, message, onConfirm) => {
+    setConfirmDialog({ open: true, title, message, onConfirm });
+  };
+
+  const closeConfirmDialog = () => {
+    setConfirmDialog({ open: false, title: "", message: "", onConfirm: null });
+  };
+
+  const handleConfirmAction = () => {
+    if (confirmDialog.onConfirm) {
+      confirmDialog.onConfirm();
+    }
+    closeConfirmDialog();
   };
 
   const handleSkillSubmit = (event) => {
     event.preventDefault();
     if (!skillForm.name.trim()) {
-      setFeedback("Please provide a skill name.");
+      showToast("Please provide a skill name.", "error");
       return;
     }
 
@@ -93,10 +123,10 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
     console.log({ payload });
     if (editingSkillId) {
       dispatch(updateSkill({ id: editingSkillId, updates: payload }));
-      setFeedback("Skill updated.");
+      showToast("Skill updated.");
     } else {
       dispatch(addSkill(payload));
-      setFeedback("Skill added.");
+      showToast("Skill added.");
     }
 
     resetSkillForm();
@@ -104,56 +134,76 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
 
   const handleProjectSubmit = (event) => {
     event.preventDefault();
+    setUploading(true);
     if (!projectForm.title.trim()) {
-      setFeedback("Please provide a project title.");
+      showToast("Please provide a project title.", "error");
       return;
     }
+    try {
+      const formData = new FormData();
 
-    const payload = {
-      ...projectForm,
-      title: projectForm.title.trim().replace(/\s+/g, " "),
-      description: projectForm.description.trim(),
-      technologies: projectForm.technologies
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean),
-      github: projectForm.github.trim(),
-      live: projectForm.live.trim(),
-      image: projectForm.image.trim(),
-      featured: Boolean(projectForm.featured),
-    };
+      formData.append("title", projectForm.title.trim());
+      formData.append("description", projectForm.description.trim());
 
-    if (editingProjectId) {
-      dispatch(updateProject({ id: editingProjectId, updates: payload }));
-      setFeedback("Project updated.");
-    } else {
-      dispatch(addProject(payload));
-      setFeedback("Project added.");
+      formData.append(
+        "technologies",
+        JSON.stringify(
+          projectForm.technologies
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean)
+        )
+      );
+
+      formData.append("github", projectForm.github.trim());
+      formData.append("live", projectForm.live.trim());
+      formData.append("featured", projectForm.featured);
+
+      if (projectForm.image) {
+        formData.append("image", projectForm.image);
+      }
+
+      if (editingProjectId) {
+        dispatch(updateProject({ id: editingProjectId, updates: formData }));
+      } else {
+        dispatch(addProject(formData));
+      }
+      setUploading(false);
+      showToast(editingProjectId ? "Project updated." : "Project added.");
+      resetProjectForm();
+    } catch (error) {
+      console.error("Error submitting project:", error);
+      showToast("An error occurred while submitting the project.", "error");
+      setUploading(false);
+    } finally {
+      setProjectImagePreview("");
     }
-
-    resetProjectForm();
   };
 
   const handleGallerySubmit = (event) => {
     event.preventDefault();
     if (!galleryForm.title.trim()) {
-      setFeedback("Please provide a gallery title.");
+      showToast("Please provide a gallery title.", "error");
       return;
     }
 
-    dispatch(
-      addGalleryItem({
-        ...galleryForm,
-        title: galleryForm.title.trim(),
-        description: galleryForm.description.trim(),
-        technologies: galleryForm.technologies
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
-        src: galleryForm.src.trim(),
-      })
-    );
-    setFeedback("Gallery item added.");
+    const formData = new FormData();
+
+    formData.append("title", galleryForm.title.trim());
+    formData.append("description", galleryForm.description.trim());
+
+    if (galleryForm.src) {
+      formData.append("image", galleryForm.src);
+    }
+
+    if (editingGalleryId) {
+      dispatch(updateGalleryItem({ id: editingGalleryId, updates: formData }));
+      showToast("Gallery item updated.");
+    } else {
+      dispatch(addGalleryItem(formData));
+      showToast("Gallery item added.");
+    }
+
     resetGalleryForm();
   };
 
@@ -166,7 +216,7 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
     });
     setSkillIconPreview(skill.icon?.startsWith("http") ? skill.icon : "");
     setEditingSkillId(skill.id);
-    setFeedback("Editing skill.");
+    showToast("Editing skill.");
   };
 
   const startEditingProject = (project) => {
@@ -180,71 +230,94 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
       featured: Boolean(project.featured),
     });
     setEditingProjectId(project.id);
-    setFeedback("Editing project.");
+    showToast("Editing project.");
+  };
+
+  const startEditingGallery = (item) => {
+    setGalleryForm({
+      title: item.title || "",
+      description: item.description || "",
+      src: item.image || item.src || "",
+    });
+    setGalleryImagePreview(item.image || item.src || "");
+    setEditingGalleryId(item.id || item._id || null);
+    showToast("Editing gallery item.");
   };
 
   const handleSkillDelete = (skill) => {
-    if (window.confirm(`Delete ${skill.name || "this skill"}?`)) {
-      dispatch(deleteSkill(skill.id));
-      setFeedback("Skill removed.");
-    }
+    openConfirmDialog(
+      "Delete skill?",
+      `This will permanently remove ${skill.name || "this skill"}.`,
+      () => {
+        dispatch(deleteSkill(skill.id));
+        showToast("Skill removed.");
+      }
+    );
   };
 
-  const uploadFile = async (file) => {
-    try {
-      setUploading(true);
-      const result = await uploadImageAPI(file);
-      setUploading(false);
-      return result.url;
-    } catch (error) {
-      setUploading(false);
-      setFeedback(error.message || "Image upload failed.");
-      return "";
-    }
-  };
-
-  const handleProjectImageSelect = async (file) => {
+  const handleProjectImageSelect = (file) => {
     const previewUrl = URL.createObjectURL(file);
+
     setProjectImagePreview(previewUrl);
-    const imageUrl = await uploadFile(file);
-    if (imageUrl) {
-      setProjectForm((current) => ({ ...current, image: imageUrl }));
-      setFeedback("Project image uploaded.");
-    }
+
+    setProjectForm((current) => ({
+      ...current,
+      image: file,
+    }));
   };
 
-  const handleGalleryImageSelect = async (file) => {
+  const handleGalleryImageSelect = (file) => {
     const previewUrl = URL.createObjectURL(file);
+
     setGalleryImagePreview(previewUrl);
-    const imageUrl = await uploadFile(file);
-    if (imageUrl) {
-      setGalleryForm((current) => ({ ...current, src: imageUrl }));
-      setFeedback("Gallery image uploaded.");
-    }
+
+    setGalleryForm((current) => ({
+      ...current,
+      src: file,
+    }));
   };
 
-  const handleSkillIconSelect = async (file) => {
+  // const handleSkillIconSelect = async (file) => {
+  //   const previewUrl = URL.createObjectURL(file);
+  //   setSkillIconPreview(previewUrl);
+  //   const imageUrl = await uploadFile(file);
+  //   if (imageUrl) {
+  //     setSkillForm((current) => ({ ...current, icon: imageUrl }));
+  //     setFeedback("Skill icon uploaded.");
+  //   }
+  // };
+
+  const handleSkillIconSelect = (file) => {
     const previewUrl = URL.createObjectURL(file);
+
     setSkillIconPreview(previewUrl);
-    const imageUrl = await uploadFile(file);
-    if (imageUrl) {
-      setSkillForm((current) => ({ ...current, icon: imageUrl }));
-      setFeedback("Skill icon uploaded.");
-    }
+
+    setSkillForm((current) => ({
+      ...current,
+      icon: file,
+    }));
   };
 
   const handleProjectDelete = (project) => {
-    if (window.confirm(`Delete ${project.title || "this project"}?`)) {
-      dispatch(deleteProject(project.id));
-      setFeedback("Project removed.");
-    }
+    openConfirmDialog(
+      "Delete project?",
+      `This will permanently remove ${project.title || "this project"}.`,
+      () => {
+        dispatch(deleteProject(project.id));
+        showToast("Project removed.");
+      }
+    );
   };
 
   const handleGalleryDelete = (item) => {
-    if (window.confirm(`Delete ${item.title || "this gallery item"}?`)) {
-      dispatch(removeGalleryItem(item.id));
-      setFeedback("Gallery item removed.");
-    }
+    openConfirmDialog(
+      "Delete gallery item?",
+      `This will permanently remove ${item.title || "this gallery item"}.`,
+      () => {
+        dispatch(deleteGalleryItem(item.id || item._id));
+        showToast("Gallery item removed.");
+      }
+    );
   };
 
   return (
@@ -264,9 +337,46 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
         </button>
       </div>
 
-      {feedback ? (
-        <div className="mb-6 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-700 dark:border-sky-500/40 dark:bg-sky-500/10 dark:text-sky-300">
-          {feedback}
+      <div className="fixed bottom-4 right-4 z-50 flex w-[min(92vw,24rem)] flex-col gap-3">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className={`rounded-2xl border px-4 py-3 text-sm shadow-lg backdrop-blur ${toast.type === "error" ? "border-red-200 bg-red-50 text-red-700 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-300" : "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-500/40 dark:bg-sky-500/10 dark:text-sky-300"}`}
+          >
+            {toast.message}
+          </div>
+        ))}
+      </div>
+
+      {confirmDialog.open ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 px-4">
+          <div className="w-full max-w-md rounded-[1.75rem] border border-red-200 bg-white p-6 shadow-2xl dark:border-red-500/30 dark:bg-slate-900">
+            <div className="flex items-start gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 text-xl text-red-600 dark:bg-red-500/10 dark:text-red-300">
+                🗑
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{confirmDialog.title}</h3>
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{confirmDialog.message}</p>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={closeConfirmDialog}
+                className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmAction}
+                className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       ) : null}
 
@@ -441,7 +551,7 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
       <div className="mt-8 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-lg dark:border-slate-700 dark:bg-slate-900">
         <div className="mb-4">
           <h3 className="text-xl font-semibold text-slate-950 dark:text-white">Gallery</h3>
-          <p className="text-sm text-slate-600 dark:text-slate-300">Add or remove gallery entries.</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">Add, edit, or remove gallery entries.</p>
         </div>
 
         <form onSubmit={handleGallerySubmit} className="space-y-3">
@@ -457,12 +567,6 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
             placeholder="Gallery description"
             className="min-h-24 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
           />
-          <input
-            value={galleryForm.technologies}
-            onChange={(event) => setGalleryForm((current) => ({ ...current, technologies: event.target.value }))}
-            placeholder="Technologies (comma separated)"
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
-          />
           <FileDropzone
             label="Gallery image"
             value={galleryForm.src}
@@ -472,7 +576,7 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
           />
           <div className="flex gap-3">
             <button type="submit" className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-600">
-              Add gallery item
+              {editingGalleryId ? "Update gallery item" : "Add gallery item"}
             </button>
             <button type="button" onClick={resetGalleryForm} className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-100">
               Clear
@@ -482,12 +586,19 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
 
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {normalizedGalleryItems.map((item) => (
-            <div key={item.id} className="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">
-              <img src={item.src || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80"} alt={item.title} className="h-40 w-full object-cover" />
+            <div key={item.id || item._id} className="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">
+              <img src={item.image || item.src || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80"} alt={item.title} className="h-40 w-full object-cover" />
               <div className="p-4">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-semibold text-slate-900 dark:text-white">{item.title}</p>
-                  <button type="button" onClick={() => handleGalleryDelete(item)} className="rounded-full bg-red-100 px-3 py-2 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-200">Delete</button>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => startEditingGallery(item)} className={iconButtonClass} aria-label={`Edit ${item.title}`} title="Edit gallery item">
+                      ✎
+                    </button>
+                    <button type="button" onClick={() => handleGalleryDelete(item)} className={`${iconButtonClass} text-red-600 hover:text-red-600 dark:text-red-300`} aria-label={`Delete ${item.title}`} title="Delete gallery item">
+                      🗑
+                    </button>
+                  </div>
                 </div>
                 <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{item.description}</p>
               </div>

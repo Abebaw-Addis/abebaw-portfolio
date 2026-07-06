@@ -1,91 +1,118 @@
-import { createSlice } from "@reduxjs/toolkit";
-import aidmsTeam from "../../assets/aidms team.jpg";
-import unityLeader from "../../assets/unity-leader.jpg";
-import unityMember from "../../assets/unity-member.jpg";
-import galleryHero from "../../assets/user.png";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { defaultGalleryItems } from "../../data/galleryData";
+import { createGalleryItemAPI, deleteGalleryItemAPI, fetchGalleryItemsAPI, updateGalleryItemAPI } from "./galleryService";
 
-const storageKey = "portfolio-gallery";
-
-const defaultGalleryItems = [
-  {
-    id: "gallery-1",
-    src: aidmsTeam,
-    title: "AI-DMS Team",
-    description: "A snapshot of the AI-Based IDS team collaboration.",
-    technologies: ["Python", "TensorFlow", "Scapy"],
-  },
-  {
-    id: "gallery-2",
-    src: unityLeader,
-    title: "Team Leader",
-    description: "Leadership and direction for the project development cycle.",
-    technologies: ["React", "Node", "MongoDB"],
-  },
-  {
-    id: "gallery-3",
-    src: unityMember,
-    title: "Team Member",
-    description: "A team member contributing to the project build and integration.",
-    technologies: ["Android", "Java", "MySQL"],
-  },
-  {
-    id: "gallery-4",
-    src: galleryHero,
-    title: "Portfolio Hero",
-    description: "Artistically styled portfolio preview as a gallery hero image.",
-    technologies: ["Design", "UX", "Branding"],
-  },
-];
-
-const readGalleryFromStorage = () => {
-  if (typeof window === "undefined") {
-    return defaultGalleryItems;
+const normalizeGalleryItems = (value) => {
+  if (Array.isArray(value)) {
+    return value.map((item) => ({ ...item, id: item.id || item._id || item.title }));
   }
 
-  try {
-    const stored = localStorage.getItem(storageKey);
-    return stored ? JSON.parse(stored) : defaultGalleryItems;
-  } catch {
-    return defaultGalleryItems;
+  if (value && Array.isArray(value.data)) {
+    return value.data.map((item) => ({ ...item, id: item.id || item._id || item.title }));
   }
-};
 
-const persistGallery = (items) => {
-  if (typeof window !== "undefined") {
-    localStorage.setItem(storageKey, JSON.stringify(items));
-  }
+  return [];
 };
 
 const initialState = {
-  galleryItems: readGalleryFromStorage(),
+  galleryItems: normalizeGalleryItems(defaultGalleryItems),
+  galleryItem: null,
+  loading: false,
+  error: null,
 };
+
+export const fetchGalleryItems = createAsyncThunk(
+  "gallery/fetchGalleryItems",
+  async (_, thunkAPI) => {
+    try {
+      const response = await fetchGalleryItemsAPI();
+      return normalizeGalleryItems(response?.data || response);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
+    }
+  }
+);
+
+export const addGalleryItem = createAsyncThunk(
+  "gallery/addGalleryItem",
+  async (data, thunkAPI) => {
+    try {
+      const response = await createGalleryItemAPI(data);
+      return normalizeGalleryItems([response?.data || response])[0];
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
+    }
+  }
+);
+
+export const updateGalleryItem = createAsyncThunk(
+  "gallery/updateGalleryItem",
+  async ({ id, updates }, thunkAPI) => {
+    try {
+      const response = await updateGalleryItemAPI(id, updates);
+      return normalizeGalleryItems([response?.data || response])[0];
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
+    }
+  }
+);
+
+export const deleteGalleryItem = createAsyncThunk(
+  "gallery/deleteGalleryItem",
+  async (id, thunkAPI) => {
+    try {
+      await deleteGalleryItemAPI(id);
+      return id;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
+    }
+  }
+);
 
 const gallerySlice = createSlice({
   name: "gallery",
   initialState,
   reducers: {
     setGalleryItems: (state, action) => {
-      state.galleryItems = action.payload;
-      persistGallery(action.payload);
+      state.galleryItems = normalizeGalleryItems(action.payload);
     },
-    addGalleryItem: (state, action) => {
-      const item = {
-        ...action.payload,
-        id: action.payload.id || `${Date.now()}-${Math.random()}`,
-        technologies: Array.isArray(action.payload.technologies)
-          ? action.payload.technologies
-          : action.payload.technologies?.split(",").map((value) => value.trim()).filter(Boolean) || [],
-      };
-      state.galleryItems = [item, ...state.galleryItems];
-      persistGallery(state.galleryItems);
-    },
-    removeGalleryItem: (state, action) => {
-      state.galleryItems = state.galleryItems.filter((item) => item.id !== action.payload);
-      persistGallery(state.galleryItems);
-    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchGalleryItems.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchGalleryItems.fulfilled, (state, action) => {
+        state.loading = false;
+        state.galleryItems = action.payload;
+      })
+      .addCase(fetchGalleryItems.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || action.error.message;
+      })
+      .addCase(addGalleryItem.fulfilled, (state, action) => {
+        state.galleryItems = [action.payload, ...state.galleryItems];
+      })
+      .addCase(updateGalleryItem.fulfilled, (state, action) => {
+        state.galleryItems = state.galleryItems.map((item) => (
+          item.id === action.payload.id || item._id === action.payload.id ? action.payload : item
+        ));
+      })
+      .addCase(deleteGalleryItem.fulfilled, (state, action) => {
+        state.galleryItems = state.galleryItems.filter((item) => item.id !== action.payload && item._id !== action.payload);
+      });
   },
 });
 
-export const { setGalleryItems, addGalleryItem, removeGalleryItem } = gallerySlice.actions;
+export const { setGalleryItems } = gallerySlice.actions;
 
 export default gallerySlice.reducer;
