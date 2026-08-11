@@ -4,7 +4,9 @@ import {
     Phone,
     SendHorizontal,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProfiles } from "../../features/profile/profileSlice";
 
 import {
     FaFacebook,
@@ -15,6 +17,41 @@ import {
 } from "react-icons/fa6";
 
 const CTA = () => {
+  const dispatch = useDispatch();
+  const { profiles = [] } = useSelector((state) => state.profile);
+
+  useEffect(() => {
+    if (!profiles.length) {
+      dispatch(fetchProfiles());
+    }
+  }, [dispatch, profiles.length]);
+
+  const getProfileValue = (key) => {
+    const entry = profiles.find((item) => item?.key === key);
+    if (!entry) {
+      return "";
+    }
+
+    if (Array.isArray(entry.value)) {
+      return entry.value.join(", ").trim();
+    }
+
+    return entry.value?.trim() || "";
+  };
+
+  const email = getProfileValue("email");
+  const phone = getProfileValue("phone");
+  const location = getProfileValue("location");
+  const socialLinks = [
+    { key: "github", label: "GitHub", icon: <FaGithub size={13} /> },
+    { key: "linkedin", label: "LinkedIn", icon: <FaLinkedin size={13} /> },
+    { key: "instagram", label: "Instagram", icon: <FaInstagram size={13} /> },
+    { key: "facebook", label: "Facebook", icon: <FaFacebook size={13} /> },
+    { key: "telegram", label: "Telegram", icon: <FaTelegram size={13} /> },
+  ]
+    .map((link) => ({ ...link, href: getProfileValue(link.key) }))
+    .filter((link) => link.href);
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -39,7 +76,7 @@ const CTA = () => {
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_NODE_URL}api/contact`,
+        `${import.meta.env.VITE_NODE_URL}/api/contact`,
         {
           method: "POST",
           headers: {
@@ -106,7 +143,7 @@ const CTA = () => {
                 <div>
                   <p className="text-xs font-semibold text-slate-900 dark:text-white">Email</p>
                   <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
-                    abadis1221@gmail.com
+                    {email || "Not provided"}
                   </p>
                 </div>
               </div>
@@ -120,7 +157,7 @@ const CTA = () => {
                 <div>
                   <p className="text-xs font-semibold text-slate-900 dark:text-white">Phone</p>
                   <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
-                    +251 978 109 304
+                    {phone || "Not provided"}
                   </p>
                 </div>
               </div>
@@ -134,7 +171,7 @@ const CTA = () => {
                 <div>
                   <p className="text-xs font-semibold text-slate-900 dark:text-white">Location</p>
                   <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
-                    Addis Ababa, Ethiopia
+                    {location || "Not provided"}
                   </p>
                 </div>
               </div>
@@ -150,55 +187,18 @@ const CTA = () => {
               </p>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                <a
-                  href="https://github.com/yourusername"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] text-slate-700 transition hover:border-emerald-500/50 hover:text-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:text-emerald-400"
-                >
-                  <FaGithub size={13} />
-                  GitHub
-                </a>
-
-                <a
-                  href="https://linkedin.com/in/yourusername"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] text-slate-700 transition hover:border-emerald-500/50 hover:text-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:text-emerald-400"
-                >
-                  <FaLinkedin size={13} />
-                  LinkedIn
-                </a>
-
-                <a
-                  href="https://instagram.com/yourusername"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] text-slate-700 transition hover:border-emerald-500/50 hover:text-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:text-emerald-400"
-                >
-                  <FaInstagram size={13} />
-                  Instagram
-                </a>
-
-                <a
-                  href="https://facebook.com/yourusername"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] text-slate-700 transition hover:border-emerald-500/50 hover:text-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:text-emerald-400"
-                >
-                  <FaFacebook size={13} />
-                  Facebook
-                </a>
-
-                <a
-                  href="https://t.me/yourusername"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] text-slate-700 transition hover:border-emerald-500/50 hover:text-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:text-emerald-400"
-                >
-                  <FaTelegram size={13} />
-                  Telegram
-                </a>
+                {socialLinks.map((link) => (
+                  <a
+                    key={link.key}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] text-slate-700 transition hover:border-emerald-500/50 hover:text-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:text-emerald-400"
+                  >
+                    {link.icon}
+                    {link.label}
+                  </a>
+                ))}
               </div>
             </div>
           </div>

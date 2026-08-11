@@ -67,6 +67,7 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
   const [profileForm, setProfileForm] = useState(emptyProfileForm);
   const [profileImageFile, setProfileImageFile] = useState(null);
   const [profileImagePreview, setProfileImagePreview] = useState("");
+  const [profileValueType, setProfileValueType] = useState("text");
   const [editingProfileId, setEditingProfileId] = useState(null);
   const [toasts, setToasts] = useState([]);
   const [confirmDialog, setConfirmDialog] = useState({
@@ -112,6 +113,7 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
     setProfileForm(emptyProfileForm);
     setProfileImageFile(null);
     setProfileImagePreview("");
+    setProfileValueType("text");
     setEditingProfileId(null);
   };
 
@@ -252,31 +254,47 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
 
   const handleProfileSubmit = (event) => {
     event.preventDefault();
-    if (!profileForm.key.trim() && !profileImageFile) {
-      showToast("Please provide a profile key or upload an image.", "error");
+
+    if (!profileForm.key.trim()) {
+      showToast("Please provide a profile key.", "error");
+      return;
+    }
+
+    if (profileValueType === "text" && !profileForm.value.trim()) {
+      showToast("Please provide a text value.", "error");
+      return;
+    }
+
+    if (profileValueType === "file" && !profileImageFile && !profileImagePreview) {
+      showToast("Please select a file.", "error");
       return;
     }
 
     const token = localStorage.getItem("token");
     const formData = new FormData();
 
-    if (profileImageFile) {
+    formData.append("key", profileForm.key.trim());
+
+    if (profileValueType === "text") {
+      formData.append("value", profileForm.value.trim());
+    } else if (profileImageFile) {
       formData.append("image", profileImageFile);
     }
 
-    if (profileForm.key.trim()) {
-      formData.append("key", profileForm.key.trim());
-    }
-
-    if (profileForm.value.trim()) {
-      formData.append("value", profileForm.value.trim());
-    }
-
     if (editingProfileId) {
-      dispatch(updateProfile({ id: editingProfileId, data: formData, token }));
+      dispatch(updateProfile({
+        id: editingProfileId,
+        data: formData,
+        token,
+      }));
+
       showToast("Profile item updated.");
     } else {
-      dispatch(createProfile({ data: formData, token }));
+      dispatch(createProfile({
+        data: formData,
+        token,
+      }));
+
       showToast("Profile item added.");
     }
 
@@ -329,14 +347,26 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
   };
 
   const startEditingProfile = (profile) => {
+    const currentValue = Array.isArray(profile.value)
+      ? profile.value[0]
+      : profile.value || "";
+
+    const isFile =
+      profile.key?.toLowerCase().includes("image") ||
+      /^(https?:)?\/\//i.test(currentValue);
+
     setProfileForm({
       key: profile.key || "",
-      value: Array.isArray(profile.value) ? profile.value.join(", ") : profile.value || "",
+      value: isFile ? "" : currentValue,
     });
-    const currentValue = Array.isArray(profile.value) ? profile.value[0] : profile.value || "";
-    setProfileImagePreview(currentValue && /^(https?:)?\/\//i.test(currentValue) ? currentValue : "");
+
+    setProfileValueType(isFile ? "file" : "text");
+
+    setProfileImagePreview(isFile ? currentValue : "");
     setProfileImageFile(null);
+
     setEditingProfileId(profile._id || profile.id || null);
+
     showToast("Editing profile item.");
   };
 
@@ -373,16 +403,6 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
     }));
   };
 
-  // const handleSkillIconSelect = async (file) => {
-  //   const previewUrl = URL.createObjectURL(file);
-  //   setSkillIconPreview(previewUrl);
-  //   const imageUrl = await uploadFile(file);
-  //   if (imageUrl) {
-  //     setSkillForm((current) => ({ ...current, icon: imageUrl }));
-  //     setFeedback("Skill icon uploaded.");
-  //   }
-  // };
-
   const handleSkillIconSelect = (file) => {
     const previewUrl = URL.createObjectURL(file);
 
@@ -396,16 +416,20 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
 
   const handleProfileImageSelect = (event) => {
     const file = event.target.files?.[0];
+
     if (!file) {
       return;
     }
 
     const previewUrl = URL.createObjectURL(file);
+
     setProfileImageFile(file);
     setProfileImagePreview(previewUrl);
+
     setProfileForm((current) => ({
       ...current,
       key: current.key || "profileImage",
+      value: "",
     }));
   };
 
@@ -730,28 +754,110 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
           <p className="text-sm text-slate-600 dark:text-slate-300">Manage key/value profile details such as full name, email, and profile image.</p>
         </div>
 
-        <form onSubmit={handleProfileSubmit} className="space-y-3">
+        <form onSubmit={handleProfileSubmit} className="space-y-4">
           <input
             value={profileForm.key}
-            onChange={(event) => setProfileForm((current) => ({ ...current, key: event.target.value }))}
-            placeholder="Profile key (e.g. fullName or profileImage)"
+            onChange={(event) =>
+              setProfileForm((current) => ({
+                ...current,
+                key: event.target.value,
+              }))
+            }
+            placeholder="Profile key (e.g. fullName, email, linkedin, cvResumeLink)"
             className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
           />
-          <textarea
-            value={profileForm.value}
-            onChange={(event) => setProfileForm((current) => ({ ...current, value: event.target.value }))}
-            placeholder="Profile text value (optional for image entries)"
-            className="min-h-24 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
-          />
-          <input type="file" accept="image/*" onChange={handleProfileImageSelect} className="w-full rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          {(profileImagePreview || (profileForm.value && /^(https?:)?\/\//i.test(profileForm.value))) && (
-            <img src={profileImagePreview || profileForm.value} alt="Profile preview" className="h-24 w-24 rounded-2xl object-cover" />
+
+          {/* Value type toggle */}
+          <div>
+            <p className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+              Value type
+            </p>
+
+            <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
+              <button
+                type="button"
+                onClick={() => {
+                  setProfileValueType("text");
+                  setProfileImageFile(null);
+                  setProfileImagePreview("");
+                }}
+                className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${profileValueType === "text"
+                    ? "bg-white text-sky-600 shadow-sm dark:bg-slate-700 dark:text-sky-300"
+                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                  }`}
+              >
+                Text
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setProfileValueType("file");
+                  setProfileForm((current) => ({
+                    ...current,
+                    value: "",
+                  }));
+                }}
+                className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${profileValueType === "file"
+                    ? "bg-white text-sky-600 shadow-sm dark:bg-slate-700 dark:text-sky-300"
+                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                  }`}
+              >
+                File
+              </button>
+            </div>
+          </div>
+
+          {/* Text value */}
+          {profileValueType === "text" && (
+            <textarea
+              value={profileForm.value}
+              onChange={(event) =>
+                setProfileForm((current) => ({
+                  ...current,
+                  value: event.target.value,
+                }))
+              }
+              placeholder="Enter profile value..."
+              className="min-h-24 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+            />
           )}
+
+          {/* File value */}
+          {profileValueType === "file" && (
+            <div className="space-y-3">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleProfileImageSelect}
+                className="w-full rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+              />
+
+              {profileImagePreview && (
+                <img
+                  src={profileImagePreview}
+                  alt="Profile preview"
+                  className="h-24 w-24 rounded-2xl object-cover"
+                />
+              )}
+            </div>
+          )}
+
           <div className="flex gap-3">
-            <button type="submit" className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-600">
-              {editingProfileId ? "Update profile item" : "Add profile item"}
+            <button
+              type="submit"
+              className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-600"
+            >
+              {editingProfileId
+                ? "Update profile item"
+                : "Add profile item"}
             </button>
-            <button type="button" onClick={resetProfileForm} className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-100">
+
+            <button
+              type="button"
+              onClick={resetProfileForm}
+              className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-100"
+            >
               Clear
             </button>
           </div>

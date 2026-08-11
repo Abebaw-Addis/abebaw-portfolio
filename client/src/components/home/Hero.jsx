@@ -42,7 +42,8 @@ const Hero = () => {
   const intro = getProfileValue("intro", "Hello, I'm");
   const title = getProfileValue("title", "Software Engineer | Web Developer | AI & Cybersecurity Enthusiast");
   const bio = getProfileValue("bio", "I build scalable full-stack apps, AI systems, and secure web platforms.");
-  const email = getProfileValue("email", "abadis1221@gmail.com");
+  const email = getProfileValue("email");
+  const cvResumeLink = getProfileValue("cvResumeLink");
   const profileImage = getProfileValue("profileImage", getProfileValue("image", userImage));
   const highlights = profileContentData.highlights;
   const cta = profileContentData.cta;
@@ -79,6 +80,16 @@ const Hero = () => {
                 {button.label}
               </a>
             ))}
+            {cvResumeLink ? (
+              <a
+                href={cvResumeLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg border border-emerald-600 px-6 py-3 text-emerald-700 transition hover:bg-emerald-600/10 dark:border-emerald-400 dark:text-emerald-300 dark:hover:bg-emerald-400/10"
+              >
+                See My CV / Resume
+              </a>
+            ) : null}
           </div>
 
           <div className="mt-8 rounded-3xl border border-slate-200 bg-slate-50 p-6 text-left shadow-sm transition-colors duration-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">

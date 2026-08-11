@@ -16,10 +16,10 @@ const Footer = () => {
     return entry.value ?? fallback;
   };
 
-  const fullName = getProfileValue("fullName", "Abebaw Addis");
-  const email = getProfileValue("email", "abebaw@gmail.com");
-  const github = getProfileValue("github", "https://github.com/Abebaw-Addis");
-  const linkedin = getProfileValue("linkedin", "https://www.linkedin.com/in/abebaw-addis-ze21");
+  const fullName = getProfileValue("fullName");
+  const email = getProfileValue("email");
+  const github = getProfileValue("github");
+  const linkedin = getProfileValue("linkedin");
   const currentYear = new Date().getFullYear();
 
   const socialLinks = [
