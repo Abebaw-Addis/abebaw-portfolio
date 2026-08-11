@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import userImage from "../../assets/user.png";
+import userImage from "../../assets/profile.jpg";
 import { profileContentData, profileData } from "../../data/homeData";
 import { fetchProfiles } from "../../features/profile/profileSlice";
 
@@ -51,7 +51,7 @@ const Hero = () => {
   return (
     <section id="home" className="flex min-h-screen items-center bg-slate-50 pt-24 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 md:grid-cols-2">
-        <div>
+        <div className="reveal-up">
           <h2 className="font-semibold text-blue-500">{intro}</h2>
           <h1 className="mt-2 text-5xl font-bold">{fullName}</h1>
           <p className="mt-4 text-lg text-slate-500 dark:text-slate-300">{title}</p>
@@ -91,11 +91,11 @@ const Hero = () => {
           </div>
         </div>
 
-        <div className="flex justify-center">
+        <div className="reveal-scale flex justify-center">
           <img
             src={profileImage || userImage}
             alt={fullName}
-            className="h-80 w-80 rounded-full border-4 border-blue-600 object-cover shadow-2xl shadow-blue-900/30"
+            className="float-slow h-80 w-80 rounded-full border-4 border-blue-600 object-cover shadow-2xl shadow-blue-900/30"
           />
         </div>
       </div>

@@ -1,14 +1,43 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { createProjectAPI, deleteProjectAPI, fetchProjectsAPI, updateProjectAPI } from "./projectsService";
 import { projectsData } from "../../data/projects";
+import { createProjectAPI, deleteProjectAPI, fetchProjectsAPI, updateProjectAPI } from "./projectsService";
+
+const normalizeTechnologies = (technologies) => {
+  if (Array.isArray(technologies)) {
+    return technologies;
+  }
+
+  if (typeof technologies === "string") {
+    try {
+      const parsed = JSON.parse(technologies);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {
+      return technologies.split(",").map((item) => item.trim()).filter(Boolean);
+    }
+  }
+
+  return [];
+};
+
+const normalizeList = (value) => normalizeTechnologies(value);
 
 const normalizeProjects = (value) => {
   if (Array.isArray(value)) {
-    return value.map((item) => ({ ...item, id: item.id || item._id || item.title }));
+    return value.map((item) => ({
+      ...item,
+      technologies: normalizeTechnologies(item.technologies),
+      features: normalizeList(item.features),
+      id: item.id || item._id || item.title,
+    }));
   }
 
   if (value && Array.isArray(value.data)) {
-    return value.data.map((item) => ({ ...item, id: item.id || item._id || item.title }));
+    return value.data.map((item) => ({
+      ...item,
+      technologies: normalizeTechnologies(item.technologies),
+      features: normalizeList(item.features),
+      id: item.id || item._id || item.title,
+    }));
   }
 
   return [];

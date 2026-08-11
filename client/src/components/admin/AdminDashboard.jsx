@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addGalleryItem, updateGalleryItem, deleteGalleryItem } from "../../features/gallery/gallerySlice";
-import { addProject, deleteProject, updateProject } from "../../features/projects/projectsSlice";
+import { addGalleryItem, deleteGalleryItem, updateGalleryItem } from "../../features/gallery/gallerySlice";
 import { createProfile, deleteProfile, updateProfile } from "../../features/profile/profileSlice";
+import { addProject, deleteProject, updateProject } from "../../features/projects/projectsSlice";
 import { addSkill, deleteSkill, updateSkill } from "../../features/skills/skillsSlice";
 import FileDropzone from "./FileDropzone";
 
@@ -21,7 +21,15 @@ const emptySkillForm = {
 const emptyProjectForm = {
   title: "",
   description: "",
+  category: "Other",
+  role: "",
+  duration: "",
+  year: "",
+  status: "Completed",
   technologies: "",
+  features: "",
+  challenges: "",
+  outcome: "",
   github: "",
   live: "",
   image: "",
@@ -163,6 +171,11 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
 
       formData.append("title", projectForm.title.trim());
       formData.append("description", projectForm.description.trim());
+      formData.append("category", projectForm.category.trim());
+      formData.append("role", projectForm.role.trim());
+      formData.append("duration", projectForm.duration.trim());
+      formData.append("year", projectForm.year ? Number(projectForm.year) : "");
+      formData.append("status", projectForm.status.trim());
 
       formData.append(
         "technologies",
@@ -173,6 +186,17 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
             .filter(Boolean)
         )
       );
+      formData.append(
+        "features",
+        JSON.stringify(
+          projectForm.features
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean)
+        )
+      );
+      formData.append("challenges", projectForm.challenges.trim());
+      formData.append("outcome", projectForm.outcome.trim());
 
       formData.append("github", projectForm.github.trim());
       formData.append("live", projectForm.live.trim());
@@ -275,7 +299,15 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
     setProjectForm({
       title: project.title || "",
       description: project.description || "",
+      category: project.category || "Other",
+      role: project.role || "",
+      duration: project.duration || "",
+      year: project.year ? String(project.year) : "",
+      status: project.status || "Completed",
       technologies: Array.isArray(project.technologies) ? project.technologies.join(", ") : "",
+      features: Array.isArray(project.features) ? project.features.join(", ") : "",
+      challenges: project.challenges || "",
+      outcome: project.outcome || "",
       github: project.github || "",
       live: project.live || "",
       image: project.image || "",
@@ -573,11 +605,64 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
               placeholder="Project description"
               className="min-h-24 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
             />
+            <div className="grid gap-3 md:grid-cols-2">
+              <input
+                value={projectForm.category}
+                onChange={(event) => setProjectForm((current) => ({ ...current, category: event.target.value }))}
+                placeholder="Category (e.g. Cybersecurity)"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+              />
+              <input
+                value={projectForm.role}
+                onChange={(event) => setProjectForm((current) => ({ ...current, role: event.target.value }))}
+                placeholder="Your role"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+              />
+              <input
+                value={projectForm.duration}
+                onChange={(event) => setProjectForm((current) => ({ ...current, duration: event.target.value }))}
+                placeholder="Duration (e.g. 3 months)"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+              />
+              <input
+                type="number"
+                min="1900"
+                max="2100"
+                value={projectForm.year}
+                onChange={(event) => setProjectForm((current) => ({ ...current, year: event.target.value }))}
+                placeholder="Year"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+              />
+              <input
+                value={projectForm.status}
+                onChange={(event) => setProjectForm((current) => ({ ...current, status: event.target.value }))}
+                placeholder="Status (e.g. Completed)"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+              />
+            </div>
             <input
               value={projectForm.technologies}
               onChange={(event) => setProjectForm((current) => ({ ...current, technologies: event.target.value }))}
               placeholder="Technologies (comma separated)"
               className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+            />
+            <input
+              value={projectForm.features}
+              onChange={(event) => setProjectForm((current) => ({ ...current, features: event.target.value }))}
+              placeholder="Key features (comma separated)"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+            />
+            <textarea
+              value={projectForm.challenges}
+              onChange={(event) => setProjectForm((current) => ({ ...current, challenges: event.target.value }))}
+              placeholder="Main challenges"
+              className="min-h-20 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+            />
+            <textarea
+              value={projectForm.outcome}
+              onChange={(event) => setProjectForm((current) => ({ ...current, outcome: event.target.value }))}
+              placeholder="Outcome or impact"
+              className="min-h-20 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
             />
             <div className="grid gap-3 md:grid-cols-2">
               <input

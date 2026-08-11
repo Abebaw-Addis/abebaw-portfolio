@@ -9,6 +9,18 @@ export const uploadProjectImages = createUpload(undefined, {
   allowedTypes: ["image/jpeg", "image/png", "image/jpg", "image/webp"],
 });
 
+const parseList = (value) => {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== "string") return [];
+
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return value.split(",").map((item) => item.trim()).filter(Boolean);
+  }
+};
+
 export const createProject = async (req, res) => {
   try {
 
@@ -25,14 +37,13 @@ export const createProject = async (req, res) => {
       imageUrl = uploadResult.url;
     }
 
-    const technologies =
-      typeof req.body.technologies === "string"
-        ? JSON.parse(req.body.technologies)
-        : [];
+    const technologies = parseList(req.body.technologies);
+    const features = parseList(req.body.features);
 
     const project = await Project.create({
       ...req.body,
       technologies,
+      features,
       image: imageUrl,
     });
 
@@ -81,10 +92,11 @@ export const updateProject = async (req, res) => {
       });
     }
 
-    const technologies =
-      typeof req.body.technologies === "string"
-        ? JSON.parse(req.body.technologies)
-        : [];
+    const technologies = parseList(req.body.technologies);
+    const features = parseList(req.body.features);
+
+    req.body.technologies = technologies;
+    req.body.features = features;
 
     // Handle image upload to Cloudinary if a new image is provided
     let imageUrl = req.body.image || existingProject.image;

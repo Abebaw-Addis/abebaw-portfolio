@@ -1,6 +1,54 @@
 import { useEffect, useState } from "react";
+import { FaCss3Alt, FaJava, FaShieldHalved } from "react-icons/fa6";
+import {
+  SiExpress,
+  SiFastapi,
+  SiGit,
+  SiHtml5,
+  SiJavascript,
+  SiMongodb,
+  SiMysql,
+  SiNodedotjs,
+  SiPhp,
+  SiPython,
+  SiReact,
+  SiScikitlearn,
+  SiTailwindcss,
+  SiTensorflow,
+} from "react-icons/si";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchSkills } from "../../features/skills/skillsSlice";
+
+const skillIcons = {
+  React: SiReact,
+  "Node.js": SiNodedotjs,
+  MongoDB: SiMongodb,
+  TensorFlow: SiTensorflow,
+  "Sckit-learn": SiScikitlearn,
+  "Scikit-learn": SiScikitlearn,
+  Cybersecurity: FaShieldHalved,
+  Python: SiPython,
+  CSS: FaCss3Alt,
+  JavaScript: SiJavascript,
+  Java: FaJava,
+  PHP: SiPhp,
+  FastAPI: SiFastapi,
+  HTML: SiHtml5,
+  "Express.js": SiExpress,
+  MySQL: SiMysql,
+  Git: SiGit,
+  Tailwind: SiTailwindcss,
+  "Tailwind CSS": SiTailwindcss,
+};
+
+const SkillIcon = ({ skill }) => {
+  if (skill.icon?.startsWith("http")) {
+    return <img src={skill.icon} alt="" className="h-6 w-6 object-contain" />;
+  }
+
+  const Icon = skillIcons[skill.icon] || skillIcons[skill.name];
+  return Icon ? <Icon aria-hidden="true" className="h-6 w-6" /> : null;
+};
 
 const groupSkillsByCategory = (skills = []) =>
   skills.reduce((acc, skill) => {
@@ -51,10 +99,13 @@ const SkillsPreview = () => {
                 <div className="space-y-4">
                   {categorySkills.map((skill) => (
                     <div key={skill.name}>
-                              <div className="flex items-center justify-between text-sm font-medium text-slate-900 dark:text-slate-100">
-                          <span>{skill.name}</span>
-                          <span>{skill.level}%</span>
-                        </div>
+                      <div className="flex items-center justify-between text-sm font-medium text-slate-900 dark:text-slate-100">
+                        <span className="flex items-center gap-2">
+                          <SkillIcon skill={skill} />
+                          {skill.name}
+                        </span>
+                        <span>{skill.level}%</span>
+                      </div>
                       <div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
                         <div
                           className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-500"
