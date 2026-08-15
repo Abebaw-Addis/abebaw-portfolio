@@ -3,13 +3,21 @@ import axios from "axios";
 const API = `${import.meta.env.VITE_NODE_URL}/api/skills`;
 const getToken = () => localStorage.getItem("token");
 
-export const createSkillAPI = async (data) => {
+const buildSkillRequestConfig = (data) => {
   const token = getToken();
-  const res = await axios.post(API, data, {
+  const isFormData = typeof FormData !== "undefined" && data instanceof FormData;
+
+  return {
     headers: {
       Authorization: `Bearer ${token}`,
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
     },
-  });
+  };
+};
+
+export const createSkillAPI = async (data) => {
+  const config = buildSkillRequestConfig(data);
+  const res = await axios.post(API, data, config);
   return res.data;
 };
 
@@ -20,12 +28,8 @@ export const fetchSkillsAPI = async () => {
 };
 
 export const updateSkillAPI = async (id, updates) => {
-  const token = getToken();
-  const res = await axios.put(`${API}/${id}`, updates, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const config = buildSkillRequestConfig(updates);
+  const res = await axios.put(`${API}/${id}`, updates, config);
   return res.data;
 };
 

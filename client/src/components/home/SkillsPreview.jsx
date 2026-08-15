@@ -67,6 +67,7 @@ const SkillsPreview = () => {
   const skills = useSelector((state) => state.skills?.skills ?? []);
   const [showAllSkills, setShowAllSkills] = useState(false);
   const skillsByCategory = groupSkillsByCategory(skills);
+  console.log({ skills });
 
   useEffect(() => {
     dispatch(fetchSkills());

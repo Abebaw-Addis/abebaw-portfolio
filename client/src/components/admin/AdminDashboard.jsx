@@ -4,6 +4,7 @@ import { addGalleryItem, deleteGalleryItem, updateGalleryItem } from "../../feat
 import { createProfile, deleteProfile, updateProfile } from "../../features/profile/profileSlice";
 import { addProject, deleteProject, updateProject } from "../../features/projects/projectsSlice";
 import { addSkill, deleteSkill, updateSkill } from "../../features/skills/skillsSlice";
+import { addTestimonial, deleteTestimonial, updateTestimonial } from "../../features/testimonials/testimonialsSlice";
 import FileDropzone from "./FileDropzone";
 
 const skillCategories = ["Frontend", "Backend", "Database", "AI/ML", "Cybersecurity", "DevOps", "Language", "Other"];
@@ -47,12 +48,28 @@ const emptyProfileForm = {
   value: "",
 };
 
+const emptyTestimonialForm = {
+  name: "",
+  role: "",
+  company: "",
+  relation: "",
+  testimonial: "",
+  email: "",
+  phone: "",
+  location: "",
+  linkedin: "",
+  website: "",
+  featured: false,
+  avatar: "",
+};
+
 const AdminDashboard = ({ deviceEmail, onLogout }) => {
   const dispatch = useDispatch();
   const skills = useSelector((state) => state.skills.skills);
   const projects = useSelector((state) => state.projects.projects);
   const galleryItems = useSelector((state) => state.gallery.galleryItems);
   const profiles = useSelector((state) => state.profile.profiles || []);
+  const testimonials = useSelector((state) => state.testimonials?.testimonials || []);
 
   const [skillForm, setSkillForm] = useState(emptySkillForm);
   const [editingSkillId, setEditingSkillId] = useState(null);
@@ -69,6 +86,9 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
   const [profileImagePreview, setProfileImagePreview] = useState("");
   const [profileValueType, setProfileValueType] = useState("text");
   const [editingProfileId, setEditingProfileId] = useState(null);
+  const [testimonialForm, setTestimonialForm] = useState(emptyTestimonialForm);
+  const [testimonialAvatarPreview, setTestimonialAvatarPreview] = useState("");
+  const [editingTestimonialId, setEditingTestimonialId] = useState(null);
   const [toasts, setToasts] = useState([]);
   const [confirmDialog, setConfirmDialog] = useState({
     open: false,
@@ -81,6 +101,7 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
   const normalizedProjects = useMemo(() => projects || [], [projects]);
   const normalizedGalleryItems = useMemo(() => galleryItems || [], [galleryItems]);
   const normalizedProfiles = useMemo(() => profiles || [], [profiles]);
+  const normalizedTestimonials = useMemo(() => testimonials || [], [testimonials]);
 
   const showToast = (message, type = "success") => {
     const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -117,6 +138,12 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
     setEditingProfileId(null);
   };
 
+  const resetTestimonialForm = () => {
+    setTestimonialForm(emptyTestimonialForm);
+    setTestimonialAvatarPreview("");
+    setEditingTestimonialId(null);
+  };
+
   const openConfirmDialog = (title, message, onConfirm) => {
     setConfirmDialog({ open: true, title, message, onConfirm });
   };
@@ -139,22 +166,22 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
       return;
     }
 
-    const payload = {
-      ...skillForm,
-      name: skillForm.name.trim(),
-      category: skillForm.category || "Other",
-      level: Math.min(
-        100,
-        Math.max(0, Number(skillForm.level))
-      ),
-      icon: skillForm.icon || "",
-    };
-    console.log({ payload });
+    const formData = new FormData();
+    formData.append("name", skillForm.name.trim());
+    formData.append("category", skillForm.category || "Other");
+    formData.append("level", String(Math.min(100, Math.max(0, Number(skillForm.level) || 0))));
+
+    if (skillForm.icon instanceof File) {
+      formData.append("icon", skillForm.icon);
+    } else if (typeof skillForm.icon === "string" && skillForm.icon.trim()) {
+      formData.append("icon", skillForm.icon.trim());
+    }
+
     if (editingSkillId) {
-      dispatch(updateSkill({ id: editingSkillId, updates: payload }));
+      dispatch(updateSkill({ id: editingSkillId, updates: formData }));
       showToast("Skill updated.");
     } else {
-      dispatch(addSkill(payload));
+      dispatch(addSkill(formData));
       showToast("Skill added.");
     }
 
@@ -301,6 +328,49 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
     resetProfileForm();
   };
 
+  const handleTestimonialSubmit = (event) => {
+    event.preventDefault();
+
+    if (!testimonialForm.name.trim()) {
+      showToast("Please provide the client's name.", "error");
+      return;
+    }
+
+    if (!testimonialForm.testimonial.trim()) {
+      showToast("Please provide the testimonial message.", "error");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("name", testimonialForm.name.trim());
+    formData.append("role", testimonialForm.role.trim());
+    formData.append("company", testimonialForm.company.trim());
+    formData.append("relation", testimonialForm.relation.trim());
+    formData.append("testimonial", testimonialForm.testimonial.trim());
+    formData.append("email", testimonialForm.email.trim());
+    formData.append("phone", testimonialForm.phone.trim());
+    formData.append("location", testimonialForm.location.trim());
+    formData.append("linkedin", testimonialForm.linkedin.trim());
+    formData.append("website", testimonialForm.website.trim());
+    formData.append("featured", String(Boolean(testimonialForm.featured)));
+
+    if (testimonialForm.avatar instanceof File) {
+      formData.append("avatar", testimonialForm.avatar);
+    } else if (typeof testimonialForm.avatar === "string" && testimonialForm.avatar.trim()) {
+      formData.append("avatar", testimonialForm.avatar.trim());
+    }
+
+    if (editingTestimonialId) {
+      dispatch(updateTestimonial({ id: editingTestimonialId, updates: formData }));
+      showToast("Testimonial updated.");
+    } else {
+      dispatch(addTestimonial(formData));
+      showToast("Testimonial added.");
+    }
+
+    resetTestimonialForm();
+  };
+
   const startEditingSkill = (skill) => {
     setSkillForm({
       name: skill.name || "",
@@ -379,6 +449,26 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
         showToast("Skill removed.");
       }
     );
+  };
+
+  const startEditingTestimonial = (testimonial) => {
+    setTestimonialForm({
+      name: testimonial.name || "",
+      role: testimonial.role || "",
+      company: testimonial.company || "",
+      relation: testimonial.relation || "",
+      testimonial: testimonial.testimonial || "",
+      email: testimonial.email || "",
+      phone: testimonial.phone || "",
+      location: testimonial.location || "",
+      linkedin: testimonial.linkedin || "",
+      website: testimonial.website || "",
+      featured: Boolean(testimonial.featured),
+      avatar: testimonial.avatar || "",
+    });
+    setTestimonialAvatarPreview(testimonial.avatar?.startsWith("http") ? testimonial.avatar : "");
+    setEditingTestimonialId(testimonial.id || testimonial._id || null);
+    showToast("Editing testimonial.");
   };
 
   const handleProjectImageSelect = (file) => {
@@ -463,6 +553,26 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
         const token = localStorage.getItem("token");
         dispatch(deleteProfile({ id: profile._id || profile.id, token }));
         showToast("Profile item removed.");
+      }
+    );
+  };
+
+  const handleTestimonialAvatarSelect = (file) => {
+    const previewUrl = URL.createObjectURL(file);
+    setTestimonialAvatarPreview(previewUrl);
+    setTestimonialForm((current) => ({
+      ...current,
+      avatar: file,
+    }));
+  };
+
+  const handleTestimonialDelete = (testimonial) => {
+    openConfirmDialog(
+      "Delete testimonial?",
+      `This will permanently remove ${testimonial.name || "this testimonial"}.`,
+      () => {
+        dispatch(deleteTestimonial({ id: testimonial.id || testimonial._id }));
+        showToast("Testimonial removed.");
       }
     );
   };
@@ -883,6 +993,125 @@ const AdminDashboard = ({ deviceEmail, onLogout }) => {
                     🗑
                   </button>
                 </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-8 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+        <div className="mb-4">
+          <h3 className="text-xl font-semibold text-slate-950 dark:text-white">Testimonials</h3>
+          <p className="text-sm text-slate-600 dark:text-slate-300">Manage client feedback, roles, contact info, and testimonial details.</p>
+        </div>
+
+        <form onSubmit={handleTestimonialSubmit} className="space-y-4">
+          <div className="grid gap-3 md:grid-cols-2">
+            <input
+              value={testimonialForm.name}
+              onChange={(event) => setTestimonialForm((current) => ({ ...current, name: event.target.value }))}
+              placeholder="Client name"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+            />
+            <input
+              value={testimonialForm.role}
+              onChange={(event) => setTestimonialForm((current) => ({ ...current, role: event.target.value }))}
+              placeholder="Role / position"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+            />
+            <input
+              value={testimonialForm.company}
+              onChange={(event) => setTestimonialForm((current) => ({ ...current, company: event.target.value }))}
+              placeholder="Company / organization"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+            />
+            <input
+              value={testimonialForm.relation}
+              onChange={(event) => setTestimonialForm((current) => ({ ...current, relation: event.target.value }))}
+              placeholder="Relation (Client, Team Lead, Manager, etc.)"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+            />
+            <input
+              type="email"
+              value={testimonialForm.email}
+              onChange={(event) => setTestimonialForm((current) => ({ ...current, email: event.target.value }))}
+              placeholder="Email"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+            />
+            <input
+              value={testimonialForm.phone}
+              onChange={(event) => setTestimonialForm((current) => ({ ...current, phone: event.target.value }))}
+              placeholder="Phone"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+            />
+            <input
+              value={testimonialForm.location}
+              onChange={(event) => setTestimonialForm((current) => ({ ...current, location: event.target.value }))}
+              placeholder="Location"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+            />
+            <input
+              value={testimonialForm.linkedin}
+              onChange={(event) => setTestimonialForm((current) => ({ ...current, linkedin: event.target.value }))}
+              placeholder="LinkedIn URL"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800 md:col-span-2"
+            />
+            <input
+              value={testimonialForm.website}
+              onChange={(event) => setTestimonialForm((current) => ({ ...current, website: event.target.value }))}
+              placeholder="Website URL"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800 md:col-span-2"
+            />
+          </div>
+
+          <textarea
+            value={testimonialForm.testimonial}
+            onChange={(event) => setTestimonialForm((current) => ({ ...current, testimonial: event.target.value }))}
+            placeholder="Testimonial text / feedback"
+            className="min-h-32 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+          />
+
+          <FileDropzone
+            label="Profile photo / avatar"
+            value={testimonialForm.avatar}
+            previewUrl={testimonialAvatarPreview || testimonialForm.avatar}
+            onFileChange={handleTestimonialAvatarSelect}
+            helperText="Upload a portrait or logo to personalize this testimonial."
+          />
+
+          <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+            <input
+              type="checkbox"
+              checked={testimonialForm.featured}
+              onChange={(event) => setTestimonialForm((current) => ({ ...current, featured: event.target.checked }))}
+            />
+            Feature this testimonial
+          </label>
+
+          <div className="flex gap-3">
+            <button type="submit" className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-600">
+              {editingTestimonialId ? "Update testimonial" : "Add testimonial"}
+            </button>
+            <button type="button" onClick={resetTestimonialForm} className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-100">
+              Clear
+            </button>
+          </div>
+        </form>
+
+        <div className="mt-6 space-y-3">
+          {normalizedTestimonials.map((testimonial) => (
+            <div key={testimonial.id || testimonial._id} className="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-3 dark:border-slate-700">
+              <div>
+                <p className="font-semibold text-slate-900 dark:text-white">{testimonial.name}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{testimonial.role || "Professional"} · {testimonial.relation || "Client"}</p>
+              </div>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => startEditingTestimonial(testimonial)} className={iconButtonClass} aria-label={`Edit ${testimonial.name}`} title="Edit testimonial">
+                  ✎
+                </button>
+                <button type="button" onClick={() => handleTestimonialDelete(testimonial)} className={`${iconButtonClass} text-red-600 hover:text-red-600 dark:text-red-300`} aria-label={`Delete ${testimonial.name}`} title="Delete testimonial">
+                  🗑
+                </button>
               </div>
             </div>
           ))}

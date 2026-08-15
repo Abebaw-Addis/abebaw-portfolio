@@ -2,10 +2,11 @@ import express from "express";
 const router = express.Router();
 
 import {
-  createSkill,
-  getSkills,
-  updateSkill,
-  deleteSkill
+    createSkill,
+    deleteSkill,
+    getSkills,
+    updateSkill,
+    uploadSkillIcon,
 } from "./skill-controller.js";
 
 import auth from "../../middleware/auth-middleware.js";
@@ -14,8 +15,8 @@ import auth from "../../middleware/auth-middleware.js";
 router.get("/", getSkills);
 
 // Protected routes (admin dashboard)
-router.post("/", auth, createSkill);
-router.put("/:id", auth, updateSkill);
+router.post("/", auth, uploadSkillIcon.single("icon"), createSkill);
+router.put("/:id", auth, uploadSkillIcon.single("icon"), updateSkill);
 router.delete("/:id", auth, deleteSkill);
 
 export default router;
